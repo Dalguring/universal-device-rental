@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: rentify-api
+
+  # secret yaml 파일 profile
+  profiles:
+    active: secret
+
+# 서버 포트
+server:
+  port: 8080
+
+# 로깅 레벨
+logging:
+  level:
+    root: INFO
+    com.rentify.rentify_api: DEBUG
