@@ -21,7 +21,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           java-version: '21'
-          distributions: 'corretto'
+          distribution: 'corretto'
           cache: 'gradle'
 
       - name: chmod Gradle
