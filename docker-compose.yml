@@ -1,0 +1,32 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: universal_device_rental_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: universal_device_rental
+      POSTGRES_USER: deviceRental
+      POSTGRES_PASSWORD: rental
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  spring:
+    image: universal-device-rental:latest
+    container_name: universal-device-rental
+    depends_on:
+      - postgres
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/universal_device_rental
+      SPRING_DATASOURCE_USERNAME: deviceRental
+      SPRING_DATASOURCE_PASSWORD: rental
+
+volumes:
+  postgres_data:
