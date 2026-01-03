@@ -7,26 +7,32 @@ services:
     restart: always
     environment:
       POSTGRES_DB: universal_device_rental
-      POSTGRES_USER: deviceRental
-      POSTGRES_PASSWORD: rental
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U deviceRental -d universal_device_rental" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   spring:
-    image: universal-device-rental:latest
+    image: daljee/universal-device-rental:latest
     container_name: universal-device-rental
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     restart: always
     ports:
       - "8080:8080"
     environment:
       SPRING_PROFILES_ACTIVE: prod
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/universal_device_rental
-      SPRING_DATASOURCE_USERNAME: deviceRental
-      SPRING_DATASOURCE_PASSWORD: rental
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
 
 volumes:
   postgres_data:
