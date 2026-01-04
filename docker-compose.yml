@@ -6,6 +6,7 @@ services:
     container_name: universal_device_rental_postgres
     restart: always
     environment:
+      TZ: Asia/Seoul
       POSTGRES_DB: universal_device_rental
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -29,10 +30,12 @@ services:
     ports:
       - "8080:8080"
     environment:
+      TZ: Asia/Seoul
       SPRING_PROFILES_ACTIVE: prod
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/universal_device_rental
       SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+
 
 volumes:
   postgres_data:
