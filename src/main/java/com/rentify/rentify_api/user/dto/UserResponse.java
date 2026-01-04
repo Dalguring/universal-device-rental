@@ -14,4 +14,5 @@ public class UserResponse {
     private final String bank;
     private final String account;
     private final String phone;
+    private final Boolean isActive;
 }

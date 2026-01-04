@@ -3,6 +3,9 @@ package com.rentify.rentify_api.user.service;
 import com.rentify.rentify_api.user.dto.CreateUserRequest;
 import com.rentify.rentify_api.user.dto.UserResponse;
 import com.rentify.rentify_api.user.entity.User;
+import com.rentify.rentify_api.user.entity.UserRole;
+import com.rentify.rentify_api.user.exception.DuplicateEmailException;
+import com.rentify.rentify_api.user.exception.UserNotFoundException;
 import com.rentify.rentify_api.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,14 +23,34 @@ public class UserService {
 
     @Transactional
     public Long signup(CreateUserRequest request) {
+        // 멱등성 처리 (나중에 추가)
 
-        return 0L;
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new DuplicateEmailException();
+        }
+
+        User user = User.builder()
+                .name(request.getName())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .address(request.getAddress())
+                .bank(request.getBank())
+                .account(request.getAccount())
+                .point(0)
+                .pointVersion((short) 0)
+                .role(UserRole.USER)
+                .phone(request.getPhone())
+                .isActive(true)
+                .build();
+
+        User saved = userRepository.save(user);
+        return saved.getId();
     }
 
     @Transactional(readOnly = true)
     public UserResponse getUserInfo(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(UserNotFoundException::new);
 
         return UserResponse.builder()
                 .id(user.getId())
@@ -37,6 +60,7 @@ public class UserService {
                 .bank(user.getBank())
                 .account(user.getAccount())
                 .phone(user.getPhone())
+                .isActive(user.getIsActive())
                 .build();
     }
 }
