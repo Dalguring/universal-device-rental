@@ -70,6 +70,9 @@ public class User {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updateAt;
 
+    @Column(name = "is_active", nullable = false)
+    private Boolean isActive;
+
     public void addPoint(int amount) {
         if (amount < 0) {
             throw new IllegalArgumentException("amount must be >= 0");

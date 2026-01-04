@@ -27,11 +27,11 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<Void>> createUser(@Valid @RequestBody CreateUserRequest request) {
+    public ResponseEntity<ApiResponse<Long>> createUser(@Valid @RequestBody CreateUserRequest request) {
         Long userId = userService.signup(request);
         URI location = URI.create("/api/users/" + userId);
 
-        return ResponseEntity.created(location).body(ApiResponse.success());
+        return ResponseEntity.created(location).body(ApiResponse.success(userId));
     }
 
     @GetMapping("/{id}")
