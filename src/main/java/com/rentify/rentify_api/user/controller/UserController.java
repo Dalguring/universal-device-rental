@@ -2,6 +2,7 @@ package com.rentify.rentify_api.user.controller;
 
 import com.rentify.rentify_api.common.response.ApiResponse;
 import com.rentify.rentify_api.user.dto.CreateUserRequest;
+import com.rentify.rentify_api.user.dto.LoginRequest;
 import com.rentify.rentify_api.user.dto.UserResponse;
 import com.rentify.rentify_api.user.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -39,4 +40,17 @@ public class UserController {
         UserResponse response = userService.getUserInfo(id);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
+
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponse<Void>> Login(@RequestBody LoginRequest request){
+        userService.login(request);
+
+        return ResponseEntity.ok(ApiResponse.success());
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout() {
+        return ResponseEntity.ok(ApiResponse.success());
+    }
+
 }

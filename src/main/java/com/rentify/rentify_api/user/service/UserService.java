@@ -1,6 +1,7 @@
 package com.rentify.rentify_api.user.service;
 
 import com.rentify.rentify_api.user.dto.CreateUserRequest;
+import com.rentify.rentify_api.user.dto.LoginRequest;
 import com.rentify.rentify_api.user.dto.UserResponse;
 import com.rentify.rentify_api.user.entity.User;
 import com.rentify.rentify_api.user.entity.UserRole;
@@ -62,5 +63,20 @@ public class UserService {
                 .phone(user.getPhone())
                 .isActive(user.getIsActive())
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public void login(LoginRequest request) {
+
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(UserNotFoundException::new);
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
+
+        if (!user.getIsActive()) {
+            throw new IllegalStateException("비활성화된 계정입니다.");
+        }
     }
 }
