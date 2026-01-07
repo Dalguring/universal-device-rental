@@ -36,3 +36,8 @@ logging:
     root: INFO
     com.rentify.rentify_api: DEBUG
     org.hibernate.SQL: debug
+
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-expire-time: 900000
+  refresh-token-expire-time: 604800000
