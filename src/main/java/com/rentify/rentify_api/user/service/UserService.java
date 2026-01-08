@@ -1,5 +1,9 @@
 package com.rentify.rentify_api.user.service;
 
+import com.rentify.rentify_api.common.exception.IdempotencyException;
+import com.rentify.rentify_api.common.idempotency.IdempotencyKey;
+import com.rentify.rentify_api.common.idempotency.IdempotencyKeyRepository;
+import com.rentify.rentify_api.common.idempotency.IdempotencyStatus;
 import com.rentify.rentify_api.user.dto.CreateUserRequest;
 import com.rentify.rentify_api.user.dto.LoginRequest;
 import com.rentify.rentify_api.user.dto.UserResponse;
@@ -8,6 +12,10 @@ import com.rentify.rentify_api.user.entity.UserRole;
 import com.rentify.rentify_api.user.exception.DuplicateEmailException;
 import com.rentify.rentify_api.user.exception.UserNotFoundException;
 import com.rentify.rentify_api.user.repository.UserRepository;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,14 +29,38 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final IdempotencyKeyRepository idempotencyKeyRepository;
 
     @Transactional
-    public Long signup(CreateUserRequest request) {
-        // 멱등성 처리 (나중에 추가)
+    public Long signup(UUID idempotencyKey, CreateUserRequest request) {
+        Optional<IdempotencyKey> existKey = idempotencyKeyRepository.findById(idempotencyKey);
+
+        if (existKey.isPresent()) {
+            IdempotencyKey key = existKey.get();
+
+            if (key.getStatus() == IdempotencyStatus.SUCCESS) {
+                Map<String, Object> responseBody = key.getResponseBody();
+                return ((Number) responseBody.get("userId")).longValue();
+            }
+
+            if (key.getStatus() == IdempotencyStatus.PENDING) {
+                throw new IdempotencyException(
+                    "이전 요청이 아직 처리 중입니다. 잠시 후 결과를 확인해주세요."
+                );
+            }
+        }
 
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new DuplicateEmailException();
         }
+
+        IdempotencyKey key = IdempotencyKey.builder()
+                .idempotencyKey(idempotencyKey)
+                .domain("USER")
+                .status(IdempotencyStatus.PENDING)
+                .build();
+
+        idempotencyKeyRepository.save(key);
 
         User user = User.builder()
                 .name(request.getName())
@@ -44,8 +76,13 @@ public class UserService {
                 .isActive(true)
                 .build();
 
-        User saved = userRepository.save(user);
-        return saved.getId();
+        User savedUser = userRepository.save(user);
+        Map<String, Object> successData = new HashMap<>();
+        successData.put("userId", savedUser.getId());
+
+        key.success(201, successData);
+
+        return savedUser.getId();
     }
 
     @Transactional(readOnly = true)

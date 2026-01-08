@@ -5,9 +5,11 @@ import com.rentify.rentify_api.user.dto.CreateUserRequest;
 import com.rentify.rentify_api.user.dto.LoginRequest;
 import com.rentify.rentify_api.user.dto.UserResponse;
 import com.rentify.rentify_api.user.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.net.URI;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -22,17 +25,21 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
-@Tag(name = "사용자 관리 API", description = "사용자 관련 API 설정 및 관리")
+@Tag(name = "USER API")
 public class UserController {
 
     private final UserService userService;
 
-    @PostMapping
-    public ResponseEntity<ApiResponse<Long>> createUser(@Valid @RequestBody CreateUserRequest request) {
-        Long userId = userService.signup(request);
+    @PostMapping(consumes = "application/json", produces = "application/json")
+    @Operation(summary = "회원가입")
+    public ResponseEntity<ApiResponse<Void>> createUser(
+            @RequestHeader(value = "Idempotency-Key") UUID idempotencyKey,
+            @Valid @RequestBody CreateUserRequest request
+    ) {
+        Long userId = userService.signup(idempotencyKey, request);
         URI location = URI.create("/api/users/" + userId);
 
-        return ResponseEntity.created(location).body(ApiResponse.success(userId));
+        return ResponseEntity.created(location).body(ApiResponse.success());
     }
 
     @GetMapping("/{id}")
