@@ -34,7 +34,7 @@ public class User {
     @Column(name = "name", nullable = false, length = 10)
     private String name;
 
-    @Column(name = "email", nullable = false, length = 100)
+    @Column(name = "email", nullable = false, length = 100, unique = true)
     private String email;
 
     @Column(name = "password", nullable = false, length = 255)
@@ -59,7 +59,7 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
-    @Column(name = "phone", length = 20)
+    @Column(name = "phone", length = 11)
     private String phone;
 
     @CreationTimestamp
