@@ -5,8 +5,6 @@ import com.rentify.rentify_api.user.dto.CreateUserRequest;
 import com.rentify.rentify_api.user.dto.LoginRequest;
 import com.rentify.rentify_api.user.dto.UserResponse;
 import com.rentify.rentify_api.user.service.UserService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.UUID;
@@ -25,13 +23,12 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
-@Tag(name = "USER API")
-public class UserController {
+public class UserController implements UserApiDocs {
 
     private final UserService userService;
 
-    @PostMapping(consumes = "application/json", produces = "application/json")
-    @Operation(summary = "회원가입")
+    @Override
+    @PostMapping
     public ResponseEntity<ApiResponse<Void>> createUser(
             @RequestHeader(value = "Idempotency-Key") UUID idempotencyKey,
             @Valid @RequestBody CreateUserRequest request
@@ -39,7 +36,7 @@ public class UserController {
         Long userId = userService.signup(idempotencyKey, request);
         URI location = URI.create("/api/users/" + userId);
 
-        return ResponseEntity.created(location).body(ApiResponse.success());
+        return ResponseEntity.created(location).body(ApiResponse.success("회원가입 성공"));
     }
 
     @GetMapping("/{id}")
