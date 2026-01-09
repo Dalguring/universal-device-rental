@@ -34,7 +34,7 @@ public class IdempotencyKey {
     private String domain;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, columnDefinition = "idempotency_status")
+    @Column(name = "status", nullable = false)
     private IdempotencyStatus status;
 
     @JdbcTypeCode(SqlTypes.JSON)
