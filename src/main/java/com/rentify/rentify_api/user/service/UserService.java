@@ -1,5 +1,6 @@
 package com.rentify.rentify_api.user.service;
 
+import com.rentify.rentify_api.common.jwt.JwtTokenProvider;
 import com.rentify.rentify_api.common.exception.IdempotencyException;
 import com.rentify.rentify_api.common.idempotency.IdempotencyKey;
 import com.rentify.rentify_api.common.idempotency.IdempotencyKeyRepository;
@@ -7,10 +8,13 @@ import com.rentify.rentify_api.common.idempotency.IdempotencyStatus;
 import com.rentify.rentify_api.user.dto.CreateUserRequest;
 import com.rentify.rentify_api.user.dto.LoginRequest;
 import com.rentify.rentify_api.user.dto.UserResponse;
+import com.rentify.rentify_api.user.entity.LoginResponse;
+import com.rentify.rentify_api.user.entity.RefreshToken;
 import com.rentify.rentify_api.user.entity.User;
 import com.rentify.rentify_api.user.entity.UserRole;
 import com.rentify.rentify_api.user.exception.DuplicateEmailException;
 import com.rentify.rentify_api.user.exception.UserNotFoundException;
+import com.rentify.rentify_api.user.repository.RefreshtokenRepository;
 import com.rentify.rentify_api.user.repository.UserRepository;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,6 +26,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -30,6 +36,8 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final IdempotencyKeyRepository idempotencyKeyRepository;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final RefreshtokenRepository refreshtokenRepository;
 
     @Transactional
     public Long signup(UUID idempotencyKey, CreateUserRequest request) {
@@ -102,8 +110,8 @@ public class UserService {
                 .build();
     }
 
-    @Transactional(readOnly = true)
-    public void login(LoginRequest request) {
+    @Transactional
+    public LoginResponse login(LoginRequest request) {
 
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(UserNotFoundException::new);
@@ -115,5 +123,19 @@ public class UserService {
         if (!user.getIsActive()) {
             throw new IllegalStateException("비활성화된 계정입니다.");
         }
+
+        String accessToken = jwtTokenProvider.createAccessToken(user.getId());
+
+        String refreshToken = jwtTokenProvider.createRefreshToken(user.getId());
+
+        refreshtokenRepository.save(
+                new RefreshToken(
+                        user.getId(),
+                        refreshToken,
+                        LocalDateTime.now().plusDays(14)
+                )
+        );
+
+        return new LoginResponse(accessToken, refreshToken);
     }
 }

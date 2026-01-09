@@ -4,6 +4,7 @@ import com.rentify.rentify_api.common.response.ApiResponse;
 import com.rentify.rentify_api.user.dto.CreateUserRequest;
 import com.rentify.rentify_api.user.dto.LoginRequest;
 import com.rentify.rentify_api.user.dto.UserResponse;
+import com.rentify.rentify_api.user.entity.LoginResponse;
 import com.rentify.rentify_api.user.service.UserService;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -46,10 +47,10 @@ public class UserController implements UserApiDocs {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<Void>> login(@RequestBody LoginRequest request){
-        userService.login(request);
+    public ResponseEntity<ApiResponse<LoginResponse>> login(@RequestBody LoginRequest request){
+        LoginResponse response = userService.login(request);
 
-        return ResponseEntity.ok(ApiResponse.success());
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @PostMapping("/logout")
