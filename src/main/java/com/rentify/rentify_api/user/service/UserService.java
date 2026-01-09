@@ -22,6 +22,7 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,11 +52,7 @@ public class UserService {
                 return ((Number) responseBody.get("userId")).longValue();
             }
 
-            if (key.getStatus() == IdempotencyStatus.PENDING) {
-                throw new IdempotencyException(
-                    "이전 요청이 아직 처리 중입니다. 잠시 후 결과를 확인해주세요."
-                );
-            }
+            throw new IdempotencyException("이전 요청이 아직 처리 중입니다. 잠시 후 결과를 확인해주세요.");
         }
 
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -68,7 +65,11 @@ public class UserService {
                 .status(IdempotencyStatus.PENDING)
                 .build();
 
-        idempotencyKeyRepository.save(key);
+        try {
+            key = idempotencyKeyRepository.saveAndFlush(key);
+        } catch (DataIntegrityViolationException e) {
+            throw new IdempotencyException("이전 요청이 아직 처리 중입니다. 잠시 후 결과를 확인해주세요.");
+        }
 
         User user = User.builder()
                 .name(request.getName())
