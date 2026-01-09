@@ -58,6 +58,8 @@ class UserServiceTest {
         User savedUser = User.builder().id(1L).email("test@test.com").build();
 
         given(userRepository.save(any(User.class))).willReturn(savedUser);
+        given(idempotencyKeyRepository.saveAndFlush(any(IdempotencyKey.class)))
+                .willAnswer(invocation -> invocation.getArgument(0));
 
         // when
         Long userId = userService.signup(idempotencyKey, request);
@@ -67,7 +69,7 @@ class UserServiceTest {
 
         // verify
         verify(userRepository, times(1)).save(any(User.class));
-        verify(idempotencyKeyRepository, times(1)).save(any(IdempotencyKey.class));
+        verify(idempotencyKeyRepository, times(1)).saveAndFlush(any(IdempotencyKey.class));
     }
 
     @Test
