@@ -1,7 +1,6 @@
 package com.rentify.rentify_api.common.exception;
 
 import com.rentify.rentify_api.common.response.ApiResponse;
-import com.rentify.rentify_api.user.exception.DuplicateEmailException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +24,8 @@ public class GlobalExceptionHandler {
                 .map(error -> error.getField() + " : " + error.getDefaultMessage())
                 .orElse("요청 값이 올바르지 않습니다.");
 
+        log.warn("Validation failed: {}", message);
+
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(ApiResponse.error("INVALID_REQUEST", message));
@@ -34,6 +35,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleJsonParseException(
             HttpMessageNotReadableException ex
     ) {
+        log.warn("JSON parse error: {}", ex.getMessage());
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
@@ -44,6 +46,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleDuplicateException(
             DuplicateException ex
     ) {
+        log.warn("Duplicate resource detected: {}", ex.getMessage());
 
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
@@ -52,8 +55,31 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ApiResponse<Void>> handleNotFoundException(NotFoundException ex) {
+        log.warn("Resource not found: {}", ex.getMessage());
+
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(ApiResponse.error("NOT_FOUND", ex.getMessage()));
+    }
+
+    @ExceptionHandler(IdempotencyException.class)
+    public ResponseEntity<ApiResponse<Void>> handleIdempotencyException(IdempotencyException ex) {
+        log.warn("Idempotency issue: {}", ex.getMessage());
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(ApiResponse.error("PROCESS_IN_PROGRESS", ex.getMessage()));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResponse<Void>> handleException(Exception ex) {
+        log.error("Unhandled exception occurred: ", ex);
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error(
+                    "INTERNAL_SERVER_ERROR",
+                    "서버 내부 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
+                ));
     }
 }

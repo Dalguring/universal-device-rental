@@ -16,3 +16,8 @@ spring:
 logging:
   level:
     org.hibernate.SQL: debug
+
+jwt:
+  secret: "vmfhaltmskdrnjsgoajsepfrhkzlxlqnpfrqksraxormatpqtmsmdmsepfrh"
+  access-token-expire-time: 900000
+  refresh-token-expire-time: 604800000
