@@ -126,7 +126,6 @@ public class UserService {
         }
 
         String accessToken = jwtTokenProvider.createAccessToken(user.getId());
-
         String refreshToken = jwtTokenProvider.createRefreshToken(user.getId());
 
         refreshtokenRepository.save(
