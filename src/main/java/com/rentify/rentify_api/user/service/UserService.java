@@ -94,23 +94,6 @@ public class UserService {
         return savedUser.getId();
     }
 
-    @Transactional(readOnly = true)
-    public UserResponse getUserInfo(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(UserNotFoundException::new);
-
-        return UserResponse.builder()
-                .id(user.getId())
-                .name(user.getName())
-                .email(user.getEmail())
-                .address(user.getAddress())
-                .bank(user.getBank())
-                .account(user.getAccount())
-                .phone(user.getPhone())
-                .isActive(user.getIsActive())
-                .build();
-    }
-
     @Transactional
     public LoginResponse login(LoginRequest request) {
 
@@ -137,5 +120,22 @@ public class UserService {
         );
 
         return new LoginResponse(accessToken, refreshToken);
+    }
+
+    @Transactional(readOnly = true)
+    public UserResponse getUserInfo(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(UserNotFoundException::new);
+
+        return UserResponse.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .address(user.getAddress())
+                .bank(user.getBank())
+                .account(user.getAccount())
+                .phone(user.getPhone())
+                .isActive(user.getIsActive())
+                .build();
     }
 }
