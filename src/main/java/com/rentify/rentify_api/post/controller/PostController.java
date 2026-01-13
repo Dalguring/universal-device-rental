@@ -1,0 +1,52 @@
+package com.rentify.rentify_api.post.controller;
+
+import com.rentify.rentify_api.common.response.ApiResponse;
+import com.rentify.rentify_api.post.entity.CategoryStatus;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/posts")
+public class PostController implements PostApiDocs {
+
+    @Override
+    @GetMapping()
+    public ResponseEntity<ApiResponse<Void>> getPosts(
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) CategoryStatus status,
+            @RequestParam(required = false) String keyword,
+            @PageableDefault(sort = "createAt", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        return ResponseEntity.ok(ApiResponse.success());
+    }
+
+    @Override
+    @GetMapping("{id}")
+    public ResponseEntity<ApiResponse<Void>> getPost(@PathVariable Long postId) {
+        return ResponseEntity.ok(ApiResponse.success());
+    }
+
+    @Override
+    @PostMapping
+    public ResponseEntity<ApiResponse<Void>> createPost() {
+        return ResponseEntity.ok(ApiResponse.success());
+    }
+
+    @Override
+    @PutMapping("{id}")
+    public ResponseEntity<ApiResponse<Void>> updatePost(@PathVariable Long postId) {
+        return ResponseEntity.ok(ApiResponse.success());
+    }
+
+}
