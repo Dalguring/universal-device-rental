@@ -1,5 +1,7 @@
 package com.rentify.rentify_api.user.service;
 
+import com.rentify.rentify_api.common.exception.AccountDeactivatedException;
+import com.rentify.rentify_api.common.exception.InvalidPasswordException;
 import com.rentify.rentify_api.common.jwt.JwtTokenProvider;
 import com.rentify.rentify_api.common.exception.IdempotencyException;
 import com.rentify.rentify_api.common.idempotency.IdempotencyKey;
@@ -118,11 +120,11 @@ public class UserService {
                 .orElseThrow(UserNotFoundException::new);
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+            throw new InvalidPasswordException("비밀번호가 일치하지 않습니다.");
         }
 
         if (!user.getIsActive()) {
-            throw new IllegalStateException("비활성화된 계정입니다.");
+            throw new AccountDeactivatedException("비활성화된 계정입니다.");
         }
 
         String accessToken = jwtTokenProvider.createAccessToken(user.getId());

@@ -82,4 +82,27 @@ public class GlobalExceptionHandler {
                     "서버 내부 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
                 ));
     }
+
+    @ExceptionHandler(InvalidPasswordException.class)
+    public ResponseEntity<ApiResponse<Void>> handleInvalidPasswordException(InvalidPasswordException ex){
+        log.warn("Invalid password: {}", ex.getMessage());
+
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(ApiResponse.error(
+                        "INVALID_PASSWORD", ex.getMessage()
+                ));
+    }
+
+    @ExceptionHandler(AccountDeactivatedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAccountDeactivatedException(AccountDeactivatedException ex){
+        log.warn("Authentication failed : {}", ex.getMessage());
+
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(ApiResponse.error(
+                        "ACCOUNT_DEACTIVATED", ex.getMessage()
+                ));
+    }
+
 }
