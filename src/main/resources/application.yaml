@@ -2,6 +2,10 @@ spring:
   application:
     name: rentify-api
 
+  registration:
+    google:
+      client-id :
+
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://43.201.87.180:5432/universal_device_rental
