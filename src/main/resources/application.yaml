@@ -4,8 +4,11 @@ spring:
 
   registration:
     google:
-      client-id :
-
+      client-id: ENC(Gobcy+l8GxIB9TkYiIBkQIwg8kEzx2uSyZRTERPita1TDsrKoGt/XZ4tP5ElVXjd0+TFav4ki8s386i/+mJdEXGDWf5xrioQH/38kMZJgImhR5Kc+9vk+A==)
+      client-secret: ENC(7XVAdomHPwFiMtxWhnoDvfyFbYMLSWua6X1Vt0o3nyTnWaF0zKawxaZKj+DLvycR)
+      scope:
+        - email
+        - profile
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://43.201.87.180:5432/universal_device_rental
