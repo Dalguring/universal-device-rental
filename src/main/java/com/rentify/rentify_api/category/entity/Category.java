@@ -1,4 +1,4 @@
-package com.rentify.rentify_api.post.entity;
+package com.rentify.rentify_api.category.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
