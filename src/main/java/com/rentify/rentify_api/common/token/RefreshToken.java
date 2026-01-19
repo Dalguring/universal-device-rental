@@ -21,7 +21,7 @@ public class RefreshToken {
 
     private boolean revoked;
 
-    public RefreshToken(Long userId, String token, LocalDateTime expiredAt){
+    public RefreshToken(Long userId, String token, LocalDateTime expiredAt) {
         this.userId = userId;
         this.token = token;
         this.expiredAt = expiredAt;

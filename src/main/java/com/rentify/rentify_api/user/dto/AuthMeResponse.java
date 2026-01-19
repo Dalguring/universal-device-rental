@@ -14,9 +14,9 @@ public class AuthMeResponse {
 
     public static AuthMeResponse from(User user) {
         return new AuthMeResponse(
-                user.getId(),
-                user.getEmail(),
-                user.getName()
+            user.getId(),
+            user.getEmail(),
+            user.getName()
         );
     }
 }

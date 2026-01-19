@@ -23,39 +23,40 @@ public class JwtTokenProvider {
         @Value("${jwt.secret}") String secret,
         @Value("${jwt.access-token-expire-time}") long accessExpireTime,
         @Value("${jwt.refresh-token-expire-time}") long refreshExpireTime
-    ){
+    ) {
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.accessExpireTime = accessExpireTime;
         this.refreshExpireTime = refreshExpireTime;
     }
 
     // Access Token 생성
-    public String createAccessToken(Long userId){
+    public String createAccessToken(Long userId) {
         return createToken(userId, accessExpireTime);
     }
 
     // Refresh Token 생성
-    public String createRefreshToken(Long userId){
+    public String createRefreshToken(Long userId) {
         return createToken(userId, refreshExpireTime);
     }
 
-    private String createToken(Long userId, long expireTime){
+    private String createToken(Long userId, long expireTime) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + expireTime);
 
         return Jwts.builder()
-                .setSubject(userId.toString())
-                .setSubject(userId.toString())
-                .setExpiration(expiry)
-                .signWith(key, SignatureAlgorithm.ES256)
-                .compact();
+            .setSubject(userId.toString())
+            .setSubject(userId.toString())
+            .setExpiration(expiry)
+            .signWith(key, SignatureAlgorithm.ES256)
+            .compact();
     }
+
     public Long getUserId(String token) {
         Claims claims = Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+            .setSigningKey(key)
+            .build()
+            .parseClaimsJws(token)
+            .getBody();
 
         return Long.parseLong(claims.getSubject());
     }
@@ -64,9 +65,9 @@ public class JwtTokenProvider {
     public boolean validate(String token) {
         try {
             Jwts.parserBuilder()
-                    .setSigningKey(key)
-                    .build()
-                    .parseClaimsJws(token);
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
             return false;
