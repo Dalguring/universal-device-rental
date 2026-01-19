@@ -1,5 +1,6 @@
 package com.rentify.rentify_api.post.entity;
 
+import com.rentify.rentify_api.category.entity.Category;
 import com.rentify.rentify_api.user.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -61,7 +62,8 @@ public class Post {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private CategoryStatus status;
+    @Builder.Default
+    private PostStatus status = PostStatus.AVAILABLE;
 
     @Column(name = "thumbnail_url")
     private String thumbnailUrl;
