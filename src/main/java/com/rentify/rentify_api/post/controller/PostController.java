@@ -3,7 +3,9 @@ package com.rentify.rentify_api.post.controller;
 import com.rentify.rentify_api.common.response.ApiResponse;
 import com.rentify.rentify_api.post.dto.CreatePostRequest;
 import com.rentify.rentify_api.post.entity.PostStatus;
+import com.rentify.rentify_api.post.service.PostService;
 import jakarta.validation.Valid;
+import java.net.URI;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +27,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/api/posts")
 public class PostController implements PostApiDocs {
+
+    private final PostService postService;
 
     @Override
     @GetMapping()
@@ -50,7 +54,9 @@ public class PostController implements PostApiDocs {
         @AuthenticationPrincipal Long userId,
         @Valid @RequestBody CreatePostRequest request
     ) {
-        return ResponseEntity.ok(ApiResponse.success());
+        Long postId = postService.createPost(idempotencyKey, userId, request);
+        URI location = URI.create("/api/posts/" + postId);
+        return ResponseEntity.created(location).body(ApiResponse.success("게시글이 생성되었습니다."));
     }
 
     @Override

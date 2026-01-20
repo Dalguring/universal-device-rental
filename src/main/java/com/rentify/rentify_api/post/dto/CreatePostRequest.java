@@ -1,19 +1,16 @@
 package com.rentify.rentify_api.post.dto;
 
-import com.rentify.rentify_api.post.entity.PostStatus;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.util.List;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
 public class CreatePostRequest {
-
-    @NotNull(message = "User ID is required")
-    private Long userId;
 
     @NotNull(message = "Category ID is required")
     private Long categoryId;
@@ -40,4 +37,5 @@ public class CreatePostRequest {
     private Boolean isMeetup;
 
     private String thumbnailUrl;
+    private List<Long> imageIds;
 }
