@@ -48,3 +48,9 @@ jwt:
   secret: test-jwt-secret-key-1234567890-very-long-secure-key-abcdef
   access-token-expire-time: 900000
   refresh-token-expire-time: 604800000
+
+file:
+  upload:
+    path: ${FILE_UPLOAD_PATH:/app/uploads}
+  base:
+    url: http://43.201.87.180:8080
