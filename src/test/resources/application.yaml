@@ -21,3 +21,9 @@ jwt:
   secret: "vmfhaltmskdrnjsgoajsepfrhkzlxlqnpfrqksraxormatpqtmsmdmsepfrh"
   access-token-expire-time: 900000
   refresh-token-expire-time: 604800000
+
+file:
+  upload:
+    path: build/test-uploads
+  base:
+    url: http://localhost:8080

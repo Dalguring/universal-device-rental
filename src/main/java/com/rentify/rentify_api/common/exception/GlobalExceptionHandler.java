@@ -71,16 +71,27 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error("PROCESS_IN_PROGRESS", ex.getMessage()));
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<Void>> handleException(Exception ex) {
-        log.error("Unhandled exception occurred: ", ex);
+    @ExceptionHandler(FileException.class)
+    public ResponseEntity<ApiResponse<Void>> handleFileException(FileException ex) {
+        log.warn("File exception occurred: {}", ex.getMessage());
 
         return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error(
-                    "INTERNAL_SERVER_ERROR",
-                    "서버 내부 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
-                ));
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ApiResponse.error("FILE_EXCEPTION", ex.getMessage()));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResponse<Void>> handleException(Exception ex) {
+
+        log.error("Unhandled exception occurred: ", ex);
+
+        String message = (ex.getMessage() != null && !ex.getMessage().isBlank())
+            ? ex.getMessage()
+            : "서버 내부 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
+
+        return ResponseEntity
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(ApiResponse.error("INTERNAL_SERVER_ERROR", message));
     }
 
     @ExceptionHandler(InvalidPasswordException.class)
