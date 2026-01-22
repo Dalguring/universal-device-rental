@@ -12,14 +12,17 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.util.UUID;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 @Tag(name = "USER API", description = "회원 가입, 로그인 등 사용자 관련 API")
 public interface UserApiDocs {
 
-    @Operation(summary = "회원가입", description = "신규 사용자를 등록합니다. <strong>멱등성 키(UUID) 헤더 필수</strong>")
+    @Operation(summary = "회원가입", description = "<strong>멱등성 키(UUID) 헤더 필수</strong><br/>신규 사용자를 등록합니다.")
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "201",
@@ -42,10 +45,20 @@ public interface UserApiDocs {
             description = "잘못된 요청 (유효성 검사 실패)",
             content = @Content(
                 mediaType = "application/json",
-                examples = @ExampleObject(
-                    name = "BadRequest",
-                    value = "{\"success\": false, \"code\": \"INVALID_REQUEST\", \"message\": \"email : 이메일 형식이 올바르지 않습니다.\", \"data\": null}"
-                )
+                examples = {
+                    @ExampleObject(
+                        name = "이메일 형식 검증 실패",
+                        value = "{\"success\": false, \"code\": \"INVALID_REQUEST\", \"message\": \"email : 이메일 형식이 올바르지 않습니다.\", \"data\": null}"
+                    ),
+                    @ExampleObject(
+                        name = "계좌번호 형식 검증 실패",
+                        value = "{\"success\": false, \"code\": \"INVALID_REQUEST\", \"message\": \"계좌번호는 숫자만 사용한 10 ~ 20자리여야 합니다.\", \"data\": null}"
+                    ),
+                    @ExampleObject(
+                        name = "휴대폰 번호 형식 검증 실패",
+                        value = "{\"success\": false, \"code\": \"INVALID_REQUEST\", \"message\": \"휴대폰 번호는 숫자만 사용한 10~11자리여야 합니다.\", \"data\": null}"
+                    ),
+                }
             )
         ),
         @ApiResponse(
@@ -55,12 +68,13 @@ public interface UserApiDocs {
                 mediaType = "application/json",
                 examples = @ExampleObject(
                     name = "Conflict",
-                    summary = "멱등성 처리 중 예시",
+                    summary = "중복된 요청(멱등성 처리)",
                     value = "{\"success\": false, \"code\": \"PROCESS_IN_PROGRESS\", \"message\": \"이전 요청이 아직 처리 중입니다. 잠시 후 결과를 확인해주세요.\", \"data\": null}"
                 )
             )
         )
     })
+    @PostMapping
     ResponseEntity<com.rentify.rentify_api.common.response.ApiResponse<Void>> createUser(
         @Parameter(
             name = "Idempotency-Key",
@@ -69,8 +83,7 @@ public interface UserApiDocs {
             in = ParameterIn.HEADER,
             example = "123e4567-e89b-12d3-a456-426614174000"
         )
-        UUID idempotencyKey,
-
+        @RequestHeader(value = "Idempotency-Key") UUID idempotencyKey,
         @RequestBody(
             description = "회원가입 요청 데이터",
             required = true,
@@ -79,6 +92,6 @@ public interface UserApiDocs {
                 schema = @Schema(implementation = CreateUserRequest.class)
             )
         )
-        CreateUserRequest request
+        @Valid CreateUserRequest request
     );
 }
