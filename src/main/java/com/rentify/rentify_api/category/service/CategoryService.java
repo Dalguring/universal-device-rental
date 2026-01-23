@@ -24,8 +24,8 @@ public class CategoryService {
         return categories.stream()
             .map(category -> {
                 CategoryInfo response = new CategoryInfo();
-                response.setId(response.getId());
-                response.setName(response.getName());
+                response.setId(category.getId());
+                response.setName(category.getName());
                 return response;
             })
             .collect(Collectors.toList());
