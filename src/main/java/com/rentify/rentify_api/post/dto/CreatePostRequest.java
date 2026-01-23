@@ -3,6 +3,7 @@ package com.rentify.rentify_api.post.dto;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 import lombok.Data;
@@ -36,6 +37,8 @@ public class CreatePostRequest {
     @NotNull(message = "Meetup available is required")
     private Boolean isMeetup;
 
-    private String thumbnailUrl;
-    private List<Long> imageIds;
+    private List<@Pattern(
+        regexp = "^http://[^/]+/images/.*",
+        message = "Invalid image URL format"
+    ) String> imageUrls;
 }

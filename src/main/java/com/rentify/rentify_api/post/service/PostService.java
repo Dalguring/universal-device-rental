@@ -7,6 +7,7 @@ import com.rentify.rentify_api.common.exception.IdempotencyException;
 import com.rentify.rentify_api.common.idempotency.IdempotencyKey;
 import com.rentify.rentify_api.common.idempotency.IdempotencyKeyRepository;
 import com.rentify.rentify_api.common.idempotency.IdempotencyStatus;
+import com.rentify.rentify_api.image.service.ImageService;
 import com.rentify.rentify_api.post.dto.CreatePostRequest;
 import com.rentify.rentify_api.post.entity.Post;
 import com.rentify.rentify_api.post.entity.PostHistory;
@@ -35,6 +36,7 @@ public class PostService {
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
     private final PostHistoryRepository postHistoryRepository;
+    private final ImageService imageService;
 
     @Transactional
     public Long createPost(UUID idempotencyKey, Long userId, CreatePostRequest request) {
@@ -79,7 +81,7 @@ public class PostService {
                 .maxRentalDays(request.getMaxRentalDays())
                 .isParcel(request.getIsParcel())
                 .isMeetup(request.getIsMeetup())
-                .thumbnailUrl(request.getThumbnailUrl())
+                .thumbnailUrl(request.getImageUrls().get(0))
                 .build();
 
             Post savedPost = postRepository.save(post);
@@ -89,7 +91,9 @@ public class PostService {
                     .afterValue(savedPost.toJson())
                     .build()
             );
-            // TODO: image 테이블 update (썸네일 URL to ID로 전환 고려)
+
+            imageService.saveImages(savedPost, request.getImageUrls());
+
             Map<String, Object> successData = new HashMap<>();
             successData.put("postId", savedPost.getId());
 
