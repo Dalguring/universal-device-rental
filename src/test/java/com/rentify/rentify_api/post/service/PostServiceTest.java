@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -52,14 +53,21 @@ class PostServiceTest {
     @InjectMocks
     private PostService postService;
 
+    private UUID idempotencyKey;
+    private Long userId;
+    private CreatePostRequest request;
+
+    @BeforeEach
+    void setUp() {
+        idempotencyKey = UUID.randomUUID();
+        userId = 1L;
+        request = new CreatePostRequest();
+    }
+
     @Test
     @DisplayName("게시글 생성 성공")
     void create_post_success() {
         // given
-        UUID idempotencyKey = UUID.randomUUID();
-        Long userId = 1L;
-        CreatePostRequest request = new CreatePostRequest();
-
         request.setCategoryId(1L);
         request.setTitle("테스트 제목");
         request.setDescription("테스트 내용");
@@ -110,10 +118,6 @@ class PostServiceTest {
     @DisplayName("멱등성 확인: 이미 성공적으로 처리된 요청(키)이면 저장된 ID를 바로 반환한다.")
     void create_post_idempotency_success() {
         //given
-        UUID idempotencyKey = UUID.randomUUID();
-        Long userId = 1L;
-        CreatePostRequest request = new CreatePostRequest();
-
         Map<String, Object> responseBody = new HashMap<>();
         responseBody.put("postId", 10L);
 
@@ -142,10 +146,6 @@ class PostServiceTest {
     @DisplayName("멱등성 처리 예외 발생")
     void create_post_idempotency_pending() {
         //given
-        UUID idempotencyKey = UUID.randomUUID();
-        Long userId = 1L;
-        CreatePostRequest request = new CreatePostRequest();
-
         IdempotencyKey pendingKey = IdempotencyKey.builder()
             .idempotencyKey(idempotencyKey)
             .status(IdempotencyStatus.PENDING)
@@ -167,17 +167,15 @@ class PostServiceTest {
     @DisplayName("존재하지 않는 유저 예외")
     void create_post_user_notfound() {
         // given
-        UUID idempotencyKey = UUID.randomUUID();
-        Long userId = Long.MAX_VALUE;
-        CreatePostRequest request = new CreatePostRequest();
+        Long notFoundUserId = Long.MAX_VALUE;
 
         given(idempotencyKeyRepository.findById(idempotencyKey)).willReturn(Optional.empty());
         given(idempotencyKeyRepository.saveAndFlush(any())).willAnswer(
             invocation -> invocation.getArgument(0));
-        given(userRepository.findById(userId)).willReturn(Optional.empty());
+        given(userRepository.findById(notFoundUserId)).willReturn(Optional.empty());
 
         // when & then
-        assertThatThrownBy(() -> postService.createPost(idempotencyKey, userId, request))
+        assertThatThrownBy(() -> postService.createPost(idempotencyKey, notFoundUserId, request))
             .isInstanceOf(UserNotFoundException.class);
 
         // verify
@@ -191,10 +189,6 @@ class PostServiceTest {
     @DisplayName("존재하지 않는 카테고리 오류")
     void create_post_category_notfound() {
         // given
-        UUID idempotencyKey = UUID.randomUUID();
-        Long userId = 1L;
-        CreatePostRequest request = new CreatePostRequest();
-
         given(idempotencyKeyRepository.findById(idempotencyKey)).willReturn(Optional.empty());
         given(idempotencyKeyRepository.saveAndFlush(any())).willAnswer(
             invocation -> invocation.getArgument(0));

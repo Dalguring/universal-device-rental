@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,13 +41,19 @@ class UserServiceTest {
     @InjectMocks
     private UserService userService;
 
+    private UUID idempotencyKey;
+    private CreateUserRequest request;
+
+    @BeforeEach
+    void setUP() {
+        idempotencyKey = UUID.randomUUID();
+        request = new CreateUserRequest();
+    }
+
     @Test
     @DisplayName("회원가입 성공: 유저가 저장되고 ID가 반환된다.")
     void signup_success() {
         // given
-        UUID idempotencyKey = UUID.randomUUID();
-        CreateUserRequest request = new CreateUserRequest();
-
         request.setEmail("test@test.com");
         request.setName("테스트유저");
         request.setPassword("password123");
@@ -76,9 +83,6 @@ class UserServiceTest {
     @DisplayName("멱등성 확인: 이미 성공적으로 처리된 요청(키)이면 저장된 ID를 바로 반환한다.")
     void signup_idempotency_success() {
         // given
-        UUID idempotencyKey = UUID.randomUUID();
-        CreateUserRequest request = new CreateUserRequest();
-
         Map<String, Object> responseBody = new HashMap<>();
         responseBody.put("userId", 100L);
 
@@ -104,9 +108,6 @@ class UserServiceTest {
     @DisplayName("멱등성 예외: 이전 요청이 아직 처리 중이면 예외가 발생한다.")
     void signup_idempotency_pending() {
         // given
-        UUID idempotencyKey = UUID.randomUUID();
-        CreateUserRequest request = new CreateUserRequest();
-
         IdempotencyKey pendingKey = IdempotencyKey.builder()
                 .idempotencyKey(idempotencyKey)
                 .status(IdempotencyStatus.PENDING)
@@ -128,9 +129,6 @@ class UserServiceTest {
     @DisplayName("중복 이메일 예외: 이미 가입된 이메일이면 예외가 발생한다.")
     void signup_duplicate_email() {
         // given
-        UUID idempotencyKey = UUID.randomUUID();
-        CreateUserRequest request = new CreateUserRequest();
-
         request.setEmail("test@test.com");
 
         given(idempotencyKeyRepository.findById(idempotencyKey)).willReturn(Optional.empty());

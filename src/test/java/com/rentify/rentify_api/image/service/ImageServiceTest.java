@@ -11,11 +11,13 @@ import com.rentify.rentify_api.image.exception.FileSizeExceededException;
 import com.rentify.rentify_api.image.exception.FileTypeNotAllowedException;
 import com.rentify.rentify_api.image.repository.ImageRepository;
 import com.rentify.rentify_api.post.entity.Post;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -35,7 +37,7 @@ class ImageServiceTest {
 
     @Test
     @DisplayName("이미지 업로드 성공")
-    void upload_success() {
+    void upload_success(@TempDir Path tempDir) {
         // given
         MockMultipartFile file1 = new MockMultipartFile(
             "files",
@@ -53,7 +55,7 @@ class ImageServiceTest {
 
         List<MultipartFile> files = List.of(file1, file2);
 
-        ReflectionTestUtils.setField(imageService, "uploadPath", "test/upload/path");
+        ReflectionTestUtils.setField(imageService, "uploadPath", tempDir.toString());
         ReflectionTestUtils.setField(imageService, "baseUrl", "http://test.com");
 
         // when
