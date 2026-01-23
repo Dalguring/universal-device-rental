@@ -19,7 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 
-@Tag(name = "USER API", description = "회원 가입, 로그인 등 사용자 관련 API")
+@Tag(name = "User API", description = "회원 가입, 로그인 등 사용자 관련 API")
 public interface UserApiDocs {
 
     @Operation(summary = "회원가입", description = "<strong>멱등성 키(UUID) 헤더 필수</strong><br/>신규 사용자를 등록합니다.")
@@ -35,7 +35,6 @@ public interface UserApiDocs {
             content = @Content(
                 mediaType = "application/json",
                 examples = @ExampleObject(
-                    name = "Success",
                     value = "{\"success\": true, \"code\": \"SUCCESS\", \"message\": \"회원가입 성공\", \"data\": null}"
                 )
             )
@@ -67,7 +66,6 @@ public interface UserApiDocs {
             content = @Content(
                 mediaType = "application/json",
                 examples = @ExampleObject(
-                    name = "Conflict",
                     summary = "중복된 요청(멱등성 처리)",
                     value = "{\"success\": false, \"code\": \"PROCESS_IN_PROGRESS\", \"message\": \"이전 요청이 아직 처리 중입니다. 잠시 후 결과를 확인해주세요.\", \"data\": null}"
                 )

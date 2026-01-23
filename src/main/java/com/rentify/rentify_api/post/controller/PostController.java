@@ -2,6 +2,7 @@ package com.rentify.rentify_api.post.controller;
 
 import com.rentify.rentify_api.common.response.ApiResponse;
 import com.rentify.rentify_api.post.dto.CreatePostRequest;
+import com.rentify.rentify_api.post.dto.CreatePostResponse;
 import com.rentify.rentify_api.post.entity.PostStatus;
 import com.rentify.rentify_api.post.service.PostService;
 import jakarta.validation.Valid;
@@ -49,14 +50,15 @@ public class PostController implements PostApiDocs {
 
     @PostMapping
     @Override
-    public ResponseEntity<ApiResponse<Void>> createPost(
+    public ResponseEntity<ApiResponse<CreatePostResponse>> createPost(
         @RequestHeader(value = "Idempotency-Key") UUID idempotencyKey,
         @AuthenticationPrincipal Long userId,
         @Valid @RequestBody CreatePostRequest request
     ) {
         Long postId = postService.createPost(idempotencyKey, userId, request);
         URI location = URI.create("/api/posts/" + postId);
-        return ResponseEntity.created(location).body(ApiResponse.success("게시글이 생성되었습니다."));
+        return ResponseEntity.created(location)
+            .body(ApiResponse.success("게시글이 생성되었습니다.", new CreatePostResponse(postId)));
     }
 
     @Override

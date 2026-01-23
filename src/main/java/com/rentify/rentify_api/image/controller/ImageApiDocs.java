@@ -25,7 +25,6 @@ public interface ImageApiDocs {
             content = @Content(
                 mediaType = "application/json",
                 examples = @ExampleObject(
-                    name = "Success",
                     value = """
                         {
                             "success": true,
