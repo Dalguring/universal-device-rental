@@ -1,21 +1,28 @@
 package com.rentify.rentify_api.image.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
+
+import com.rentify.rentify_api.image.entity.Image;
 import com.rentify.rentify_api.image.exception.FileLimitExceededException;
 import com.rentify.rentify_api.image.exception.FileSizeExceededException;
 import com.rentify.rentify_api.image.exception.FileTypeNotAllowedException;
 import com.rentify.rentify_api.image.repository.ImageRepository;
+import com.rentify.rentify_api.post.entity.Post;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.multipart.MultipartFile;
-import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 class ImageServiceTest {
@@ -120,5 +127,42 @@ class ImageServiceTest {
         assertThatThrownBy(() -> imageService.uploadImages(files))
             .isInstanceOf(FileTypeNotAllowedException.class)
             .hasMessage("지원하지 않는 파일 형식입니다.");
+    }
+
+    @Test
+    @DisplayName("이미지 저장 성공")
+    void save_image_success() {
+        // given
+        Post post = Post.builder()
+            .id(1L)
+            .title("테스트 게시글")
+            .build();
+
+        List<String> imageUrls = List.of(
+            "http://test.com:8080/images/test1.png",
+            "http://test.com:8080/images/test2.jpg"
+        );
+
+        // when
+        imageService.saveImages(post, imageUrls);
+
+        // then
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<List<Image>> captor = ArgumentCaptor.forClass(List.class);
+
+        verify(imageRepository, times(1)).saveAll(captor.capture());
+
+        List<Image> savedImages = captor.getValue();
+        assertThat(savedImages).hasSize(2);
+
+        Image file1 = savedImages.get(0);
+        assertThat(file1.getUrl()).isEqualTo("http://test.com:8080/images/test1.png");
+        assertThat(file1.getFilename()).isEqualTo("test1.png");
+        assertThat(file1.getOrder()).isEqualTo((short) 0);
+        assertThat(file1.getPost()).isEqualTo(post);
+
+        Image file2 = savedImages.get(1);
+        assertThat(file2.getUrl()).isEqualTo("http://test.com:8080/images/test2.jpg");
+        assertThat(file2.getOrder()).isEqualTo((short) 1);
     }
 }
