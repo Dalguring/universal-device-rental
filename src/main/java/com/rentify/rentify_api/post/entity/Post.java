@@ -1,5 +1,9 @@
 package com.rentify.rentify_api.post.entity;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.rentify.rentify_api.category.entity.Category;
 import com.rentify.rentify_api.user.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -13,6 +17,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -61,7 +67,8 @@ public class Post {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private CategoryStatus status;
+    @Builder.Default
+    private PostStatus status = PostStatus.AVAILABLE;
 
     @Column(name = "thumbnail_url")
     private String thumbnailUrl;
@@ -73,4 +80,28 @@ public class Post {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updateAt;
+
+    public String toJson() {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule());
+
+            Map<String, Object> data = new HashMap<>();
+            data.put("id", this.id);
+            data.put("title", this.title);
+            data.put("description", this.description);
+            data.put("pricePerDay", this.pricePerDay);
+            data.put("maxRentalDays", this.maxRentalDays);
+            data.put("isParcel", this.isParcel);
+            data.put("isMeetup", this.isMeetup);
+            data.put("status", this.status);
+            data.put("thumbnailUrl", this.thumbnailUrl);
+            data.put("userId", this.user != null ? this.user.getId() : null);
+            data.put("categoryId", this.category != null ? this.category.getId() : null);
+
+            return mapper.writeValueAsString(data);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("JSON 변환 실패", e);
+        }
+    }
 }

@@ -31,8 +31,8 @@ public class UserController implements UserApiDocs {
     @Override
     @PostMapping
     public ResponseEntity<ApiResponse<Void>> createUser(
-            @RequestHeader(value = "Idempotency-Key") UUID idempotencyKey,
-            @Valid @RequestBody CreateUserRequest request
+        @RequestHeader(value = "Idempotency-Key") UUID idempotencyKey,
+        @Valid @RequestBody CreateUserRequest request
     ) {
         Long userId = userService.signup(idempotencyKey, request);
         URI location = URI.create("/api/users/" + userId);
@@ -47,7 +47,7 @@ public class UserController implements UserApiDocs {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<LoginResponse>> login(@RequestBody LoginRequest request){
+    public ResponseEntity<ApiResponse<LoginResponse>> login(@RequestBody LoginRequest request) {
         LoginResponse response = userService.login(request);
 
         return ResponseEntity.ok(ApiResponse.success(response));

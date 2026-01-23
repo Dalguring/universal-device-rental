@@ -1,9 +1,11 @@
 package com.rentify.rentify_api.image.service;
 
+import com.rentify.rentify_api.image.entity.Image;
 import com.rentify.rentify_api.image.exception.FileLimitExceededException;
 import com.rentify.rentify_api.image.exception.FileSizeExceededException;
 import com.rentify.rentify_api.image.exception.FileTypeNotAllowedException;
 import com.rentify.rentify_api.image.repository.ImageRepository;
+import com.rentify.rentify_api.post.entity.Post;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -67,7 +69,30 @@ public class ImageService {
         return imageUrls;
     }
 
-    // TODO: post 저장 시 image table 저장
+    @Transactional
+    public void saveImages(Post post, List<String> imageUrls) {
+        if (imageUrls == null || imageUrls.isEmpty()) {
+            return;
+        }
+
+        List<Image> images = new ArrayList<>();
+
+        for (int i = 0; i < imageUrls.size(); i++) {
+            String url = imageUrls.get(i);
+            String filename = url.substring(url.lastIndexOf("/") + 1);
+
+            Image image = Image.builder()
+                .post(post)
+                .url(url)
+                .filename(filename)
+                .order((short) i)
+                .build();
+
+            images.add(image);
+        }
+
+        imageRepository.saveAll(images);
+    }
 
     private void validateFiles(List<MultipartFile> files) {
         if (files.size() > 5) {

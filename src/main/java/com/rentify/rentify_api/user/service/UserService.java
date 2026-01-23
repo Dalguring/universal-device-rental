@@ -62,10 +62,10 @@ public class UserService {
         }
 
         IdempotencyKey key = IdempotencyKey.builder()
-                .idempotencyKey(idempotencyKey)
-                .domain("USER")
-                .status(IdempotencyStatus.PENDING)
-                .build();
+            .idempotencyKey(idempotencyKey)
+            .domain("USER")
+            .status(IdempotencyStatus.PENDING)
+            .build();
 
         try {
             key = idempotencyKeyRepository.saveAndFlush(key);
@@ -74,18 +74,18 @@ public class UserService {
         }
 
         User user = User.builder()
-                .name(request.getName())
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .address(request.getAddress())
-                .bank(request.getBank())
-                .account(request.getAccount())
-                .point(0)
-                .pointVersion((short) 0)
-                .role(UserRole.USER)
-                .phone(request.getPhone())
-                .isActive(true)
-                .build();
+            .name(request.getName())
+            .email(request.getEmail())
+            .password(passwordEncoder.encode(request.getPassword()))
+            .address(request.getAddress())
+            .bank(request.getBank())
+            .account(request.getAccount())
+            .point(0)
+            .pointVersion((short) 0)
+            .role(UserRole.USER)
+            .phone(request.getPhone())
+            .isActive(true)
+            .build();
 
         User savedUser = userRepository.save(user);
         Map<String, Object> successData = new HashMap<>();
@@ -100,7 +100,7 @@ public class UserService {
     public LoginResponse login(LoginRequest request) {
 
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(UserNotFoundException::new);
+            .orElseThrow(UserNotFoundException::new);
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new InvalidPasswordException("비밀번호가 일치하지 않습니다.");
@@ -114,11 +114,11 @@ public class UserService {
         String refreshToken = jwtTokenProvider.createRefreshToken(user.getId());
 
         refreshtokenRepository.save(
-                new RefreshToken(
-                        user.getId(),
-                        refreshToken,
-                        LocalDateTime.now().plusDays(14)
-                )
+            new RefreshToken(
+                user.getId(),
+                refreshToken,
+                LocalDateTime.now().plusDays(14)
+            )
         );
 
         return new LoginResponse(accessToken, refreshToken);
@@ -127,17 +127,17 @@ public class UserService {
     @Transactional(readOnly = true)
     public UserResponse getUserInfo(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(UserNotFoundException::new);
+            .orElseThrow(UserNotFoundException::new);
 
         return UserResponse.builder()
-                .id(user.getId())
-                .name(user.getName())
-                .email(user.getEmail())
-                .address(user.getAddress())
-                .bank(user.getBank())
-                .account(user.getAccount())
-                .phone(user.getPhone())
-                .isActive(user.getIsActive())
-                .build();
+            .id(user.getId())
+            .name(user.getName())
+            .email(user.getEmail())
+            .address(user.getAddress())
+            .bank(user.getBank())
+            .account(user.getAccount())
+            .phone(user.getPhone())
+            .isActive(user.getIsActive())
+            .build();
     }
 }

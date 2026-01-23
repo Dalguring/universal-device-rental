@@ -22,14 +22,14 @@ public class AuthService {
         Long userId = getCurrentUserId();
 
         User user = userRepository.findById(userId)
-                .orElseThrow(UserNotFoundException::new);
+            .orElseThrow(UserNotFoundException::new);
 
         return AuthMeResponse.from(user);
     }
 
     private Long getCurrentUserId() {
         Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
+            SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new UnauthenticatedException();
