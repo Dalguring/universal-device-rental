@@ -29,10 +29,10 @@ public class PostHistory {
     @Column(name = "post_id", nullable = false)
     private Long postId;
 
-    @Column(name = "before_value")
+    @Column(name = "before_value", columnDefinition = "TEXT")
     private String beforeValue;
 
-    @Column(name = "after_value", nullable = false)
+    @Column(name = "after_value", nullable = false, columnDefinition = "TEXT")
     private String afterValue;
 
     @CreationTimestamp
