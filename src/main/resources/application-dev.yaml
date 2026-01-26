@@ -1,0 +1,30 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${OAUTH2_GOOGLE_ID}
+            client-secret: ${OAUTH2_GOOGLE_SECRET}
+
+logging:
+  level:
+    root: INFO
+    com.rentify.rentify_api: INFO
+    org.hibernate.SQL: ERROR
+
+file:
+  upload:
+    path: ${FILE_UPLOAD_PATH:/app/uploads}
+  base:
+    url: ${FILE_BASE_URL}
