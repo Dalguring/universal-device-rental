@@ -49,34 +49,31 @@ jobs:
           push: true
           tags: | 
             ${{ secrets.DOCKERHUB_USERNAME }}/universal-device-rental:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/universal-device-rental:${{ github.sha }}
 
-      - name: Copy docker-compose.yml to EC2
+      - name: Copy docker-compose.yml to GCP
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: appleboy/scp-action@v1
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
+          host: ${{ secrets.GCP_HOST }}
+          username: ${{ secrets.GCP_USERNAME }}
+          key: ${{ secrets.GCP_SSH_KEY }}
           source: "docker-compose.yml"
-          target: "/home/ubuntu/universal-device-rental/infra"
+          target: "/home/${{ secrets.GCP_USERNAME }}/ecommerce-project/infra"
 
-      - name: Deploy to EC2
+      - name: Deploy to GCP
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: appleboy/ssh-action@v1.2.4
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
+          host: ${{ secrets.GCP_HOST }}
+          username: ${{ secrets.GCP_USERNAME }}
+          key: ${{ secrets.GCP_SSH_KEY }}
           script: |
-            sudo mkdir -p /home/ubuntu/universal-device-rental/infra
-            sudo mkdir -p /home/ubuntu/universal-device-rental/app
+            sudo mkdir -p /home/${{ secrets.GCP_USERNAME }}/ecommerce-project/infra
             
-            cd /home/ubuntu/universal-device-rental/infra
+            cd /home/${{ secrets.GCP_USERNAME }}/ecommerce-project/infra
             
             sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/universal-device-rental:latest
             
             sudo docker compose down
             sudo docker compose up -d
-            
             sudo docker image prune -f
