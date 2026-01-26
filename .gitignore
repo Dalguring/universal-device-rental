@@ -43,3 +43,4 @@ out/
 **/application-secret.yaml
 **/*-secret.yml
 **/*-secret.yaml
+.env
