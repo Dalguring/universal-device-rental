@@ -2,6 +2,7 @@ package com.rentify.rentify_api.user.service;
 
 import com.rentify.rentify_api.common.exception.AccountDeactivatedException;
 import com.rentify.rentify_api.common.exception.InvalidPasswordException;
+import com.rentify.rentify_api.common.exception.NotFoundException;
 import com.rentify.rentify_api.common.jwt.JwtTokenProvider;
 import com.rentify.rentify_api.common.exception.IdempotencyException;
 import com.rentify.rentify_api.common.idempotency.IdempotencyKey;
@@ -106,6 +107,18 @@ public class UserService {
             throw new InvalidPasswordException("비밀번호가 일치하지 않습니다.");
         }
 
+        return issueTokens(user);
+    }
+
+    @Transactional
+    public LoginResponse oauthLogin(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new NotFoundException("회원 정보를 찾을 수 없습니다."));
+
+        return issueTokens(user);
+    }
+
+    private LoginResponse issueTokens(User user) {
         if (!user.getIsActive()) {
             throw new AccountDeactivatedException("비활성화된 계정입니다.");
         }
@@ -114,11 +127,11 @@ public class UserService {
         String refreshToken = jwtTokenProvider.createRefreshToken(user.getId());
 
         refreshtokenRepository.save(
-            new RefreshToken(
-                user.getId(),
-                refreshToken,
-                LocalDateTime.now().plusDays(14)
-            )
+                new RefreshToken(
+                        user.getId(),
+                        refreshToken,
+                        LocalDateTime.now().plusDays(14)
+                )
         );
 
         return new LoginResponse(accessToken, refreshToken);
