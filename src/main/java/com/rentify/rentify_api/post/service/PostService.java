@@ -4,11 +4,13 @@ import com.rentify.rentify_api.category.entity.Category;
 import com.rentify.rentify_api.category.exception.CategoryNotFoundException;
 import com.rentify.rentify_api.category.repository.CategoryRepository;
 import com.rentify.rentify_api.common.exception.IdempotencyException;
+import com.rentify.rentify_api.common.exception.NotFoundException;
 import com.rentify.rentify_api.common.idempotency.IdempotencyKey;
 import com.rentify.rentify_api.common.idempotency.IdempotencyKeyRepository;
 import com.rentify.rentify_api.common.idempotency.IdempotencyStatus;
 import com.rentify.rentify_api.image.service.ImageService;
 import com.rentify.rentify_api.post.dto.CreatePostRequest;
+import com.rentify.rentify_api.post.dto.PostDetailResponse;
 import com.rentify.rentify_api.post.entity.Post;
 import com.rentify.rentify_api.post.entity.PostHistory;
 import com.rentify.rentify_api.post.repository.PostHistoryRepository;
@@ -81,7 +83,7 @@ public class PostService {
                 .maxRentalDays(request.getMaxRentalDays())
                 .isParcel(request.getIsParcel())
                 .isMeetup(request.getIsMeetup())
-                .thumbnailUrl(request.getImageUrls().get(0))
+                .thumbnailUrl(request.getImageUrls().getFirst())
                 .build();
 
             Post savedPost = postRepository.save(post);
@@ -104,5 +106,13 @@ public class PostService {
             key.fail();
             throw e;
         }
+    }
+
+    @Transactional(readOnly = true)
+    public PostDetailResponse getPost(Long postId) {
+        Post post = postRepository.findById(postId)
+            .orElseThrow(() -> new NotFoundException("게시글을 찾을 수 없습니다."));
+
+        return PostDetailResponse.from(post);
     }
 }
