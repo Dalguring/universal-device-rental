@@ -2,6 +2,7 @@ package com.rentify.rentify_api.post.controller;
 
 import com.rentify.rentify_api.post.dto.CreatePostRequest;
 import com.rentify.rentify_api.post.dto.CreatePostResponse;
+import com.rentify.rentify_api.post.dto.PostDetailResponse;
 import com.rentify.rentify_api.post.entity.PostStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -21,6 +22,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -36,9 +38,71 @@ public interface PostApiDocs {
         @PageableDefault Pageable pageable
     );
 
-    ResponseEntity<com.rentify.rentify_api.common.response.ApiResponse<Void>> getPost(
-        @PathVariable Long postId
-    );
+    @Operation(summary = "게시글 상세 조회", description = "게시글을 상세 조회합니다.")
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "게시글 상세 조회 성공",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = """
+                        {
+                            "success": true,
+                            "code": "SUCCESS",
+                            "message": "요청이 성공했습니다.",
+                            "data": {
+                                "categoryName": "갤럭시 울트라",
+                                "createAt": "2026-01-28T20:55:58.522954",
+                                "description": "테스트입니다",
+                                "imageUrls": [
+                                "http://unirental.duckdns.org/images/6d82b234-6708-4875-ba60-80af76cc9e69.jpg",
+                                "http://unirental.duckdns.org/images/20689993-ef98-4919-b8e9-631448253749.jpg"
+                                ],
+                                "isMeetup": false,
+                                "isParcel": true,
+                                "maxRentalDays": 30,
+                                "postId": 1,
+                                "pricePerDay": 50000,
+                                "status": "AVAILABLE",
+                                "title": "갤럭시 S25엣지 대여",
+                                "updateAt": "2026-01-28T20:55:58.523022",
+                                "userId": 1,
+                                "userName": "서성민"
+                            }
+                        }
+                        """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "존재하지 않는 게시글",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = """
+                        {
+                            "success": false,
+                            "code": "NOT_FOUND",
+                            "message": "게시글을 찾을 수 없습니다.",
+                            "data": null
+                        }
+                        """
+                )
+            )
+        )
+    })
+    @Parameter(
+        name = "id",
+        description = "게시글 ID",
+        required = true,
+        in = ParameterIn.PATH,
+        example = "1"
+    )
+    @GetMapping("{id}")
+    ResponseEntity<com.rentify.rentify_api.common.response.ApiResponse<PostDetailResponse>> getPost(
+        @PathVariable Long id);
 
     @Operation(summary = "게시글 생성", description = "<strong>멱등성 키(UUID) 헤더 필수</strong><br/>게시글을 등록합니다.")
     @ApiResponses(value = {

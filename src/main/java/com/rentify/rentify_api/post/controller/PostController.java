@@ -3,6 +3,7 @@ package com.rentify.rentify_api.post.controller;
 import com.rentify.rentify_api.common.response.ApiResponse;
 import com.rentify.rentify_api.post.dto.CreatePostRequest;
 import com.rentify.rentify_api.post.dto.CreatePostResponse;
+import com.rentify.rentify_api.post.dto.PostDetailResponse;
 import com.rentify.rentify_api.post.entity.PostStatus;
 import com.rentify.rentify_api.post.service.PostService;
 import jakarta.validation.Valid;
@@ -44,8 +45,9 @@ public class PostController implements PostApiDocs {
 
     @Override
     @GetMapping("{id}")
-    public ResponseEntity<ApiResponse<Void>> getPost(@PathVariable Long postId) {
-        return ResponseEntity.ok(ApiResponse.success());
+    public ResponseEntity<ApiResponse<PostDetailResponse>> getPost(@PathVariable Long id) {
+        PostDetailResponse response = postService.getPost(id);
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @PostMapping
