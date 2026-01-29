@@ -19,7 +19,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 public class AuthController implements AuthApi {
 
     private final AuthService authService;
-    private UserService userService;
+    private final UserService userService;
 
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserResponse>> me(@AuthenticationPrincipal Long userId) {
