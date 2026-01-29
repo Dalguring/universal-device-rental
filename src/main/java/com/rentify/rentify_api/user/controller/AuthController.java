@@ -19,11 +19,10 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 public class AuthController implements AuthApi {
 
     private final AuthService authService;
-    private final UserService userService;
 
     @GetMapping("/me")
-    public ResponseEntity<ApiResponse<UserResponse>> me(@AuthenticationPrincipal Long userId) {
-        UserResponse response = userService.getUserInfo(userId);
+    public ResponseEntity<ApiResponse<AuthMeResponse>> me(@AuthenticationPrincipal Long userId) {
+        AuthMeResponse response = authService.getMe(userId);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
