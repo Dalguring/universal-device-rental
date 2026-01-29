@@ -25,7 +25,7 @@ public interface CategoryApiDocs {
                         {
                             "success": true,
                             "code": "SUCCESS",
-                            "message": "요청이 성공했습니다.",
+                            "message": "요청이 성공적으로 처리되었습니다.",
                             "data": {
                                 "categories": [
                                     {
