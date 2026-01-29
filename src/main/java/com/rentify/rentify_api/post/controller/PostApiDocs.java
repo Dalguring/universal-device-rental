@@ -1,6 +1,6 @@
 package com.rentify.rentify_api.post.controller;
 
-import com.rentify.rentify_api.post.dto.CreatePostRequest;
+import com.rentify.rentify_api.post.dto.PostFormRequest;
 import com.rentify.rentify_api.post.dto.CreatePostResponse;
 import com.rentify.rentify_api.post.dto.PostDetailResponse;
 import com.rentify.rentify_api.post.entity.PostStatus;
@@ -25,6 +25,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -240,7 +241,7 @@ public interface PostApiDocs {
             required = true,
             content = @Content(
                 mediaType = "application/json",
-                schema = @Schema(implementation = CreatePostRequest.class),
+                schema = @Schema(implementation = PostFormRequest.class),
                 examples = @ExampleObject(
                     value = """
                     {
@@ -257,10 +258,13 @@ public interface PostApiDocs {
                 )
             )
         )
-        @Valid CreatePostRequest request
+        @Valid PostFormRequest request
     );
 
+    @PutMapping("{id}")
     ResponseEntity<com.rentify.rentify_api.common.response.ApiResponse<Void>> updatePost(
-        @PathVariable Long postId
+        @PathVariable Long id,
+        @AuthenticationPrincipal Long userId,
+        @Valid @org.springframework.web.bind.annotation.RequestBody PostFormRequest request
     );
 }

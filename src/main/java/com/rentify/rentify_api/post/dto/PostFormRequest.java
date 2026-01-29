@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class CreatePostRequest {
+public class PostFormRequest {
 
     @NotNull(message = "Category ID is required")
     private Long categoryId;

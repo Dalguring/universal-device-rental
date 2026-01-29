@@ -17,7 +17,7 @@ import com.rentify.rentify_api.common.idempotency.IdempotencyKeyRepository;
 import com.rentify.rentify_api.common.idempotency.IdempotencyStatus;
 import com.rentify.rentify_api.image.entity.Image;
 import com.rentify.rentify_api.image.service.ImageService;
-import com.rentify.rentify_api.post.dto.CreatePostRequest;
+import com.rentify.rentify_api.post.dto.PostFormRequest;
 import com.rentify.rentify_api.post.dto.PostDetailResponse;
 import com.rentify.rentify_api.post.entity.Post;
 import com.rentify.rentify_api.post.repository.PostHistoryRepository;
@@ -58,13 +58,13 @@ class PostServiceTest {
 
     private UUID idempotencyKey;
     private Long userId;
-    private CreatePostRequest request;
+    private PostFormRequest request;
 
     @BeforeEach
     void setUp() {
         idempotencyKey = UUID.randomUUID();
         userId = 1L;
-        request = new CreatePostRequest();
+        request = new PostFormRequest();
     }
 
     @Test

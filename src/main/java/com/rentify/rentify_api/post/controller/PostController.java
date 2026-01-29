@@ -1,7 +1,7 @@
 package com.rentify.rentify_api.post.controller;
 
 import com.rentify.rentify_api.common.response.ApiResponse;
-import com.rentify.rentify_api.post.dto.CreatePostRequest;
+import com.rentify.rentify_api.post.dto.PostFormRequest;
 import com.rentify.rentify_api.post.dto.CreatePostResponse;
 import com.rentify.rentify_api.post.dto.PostDetailResponse;
 import com.rentify.rentify_api.post.entity.PostStatus;
@@ -55,7 +55,7 @@ public class PostController implements PostApiDocs {
     public ResponseEntity<ApiResponse<CreatePostResponse>> createPost(
         @RequestHeader(value = "Idempotency-Key") UUID idempotencyKey,
         @AuthenticationPrincipal Long userId,
-        @Valid @RequestBody CreatePostRequest request
+        @Valid @RequestBody PostFormRequest request
     ) {
         Long postId = postService.createPost(idempotencyKey, userId, request);
         URI location = URI.create("/api/posts/" + postId);
@@ -65,7 +65,12 @@ public class PostController implements PostApiDocs {
 
     @Override
     @PutMapping("{id}")
-    public ResponseEntity<ApiResponse<Void>> updatePost(@PathVariable Long postId) {
+    public ResponseEntity<ApiResponse<Void>> updatePost(
+        @PathVariable Long id,
+        @AuthenticationPrincipal Long userId,
+        @Valid @RequestBody PostFormRequest request
+    ) {
+        postService.updatePost(id, userId, request);
         return ResponseEntity.ok(ApiResponse.success());
     }
 

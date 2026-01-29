@@ -9,7 +9,7 @@ import com.rentify.rentify_api.common.idempotency.IdempotencyKey;
 import com.rentify.rentify_api.common.idempotency.IdempotencyKeyRepository;
 import com.rentify.rentify_api.common.idempotency.IdempotencyStatus;
 import com.rentify.rentify_api.image.service.ImageService;
-import com.rentify.rentify_api.post.dto.CreatePostRequest;
+import com.rentify.rentify_api.post.dto.PostFormRequest;
 import com.rentify.rentify_api.post.dto.PostDetailResponse;
 import com.rentify.rentify_api.post.entity.Post;
 import com.rentify.rentify_api.post.entity.PostHistory;
@@ -41,7 +41,7 @@ public class PostService {
     private final ImageService imageService;
 
     @Transactional
-    public Long createPost(UUID idempotencyKey, Long userId, CreatePostRequest request) {
+    public Long createPost(UUID idempotencyKey, Long userId, PostFormRequest request) {
         Optional<IdempotencyKey> existKey = idempotencyKeyRepository.findById(idempotencyKey);
 
         if (existKey.isPresent()) {
@@ -114,5 +114,10 @@ public class PostService {
             .orElseThrow(() -> new NotFoundException("게시글을 찾을 수 없습니다."));
 
         return PostDetailResponse.from(post);
+    }
+
+    public void updatePost(Long postId, Long userId, PostFormRequest request) {
+        Post post = postRepository.findById(postId)
+            .orElseThrow(() -> new NotFoundException("게시글을 찾을 수 없습니다."));
     }
 }
