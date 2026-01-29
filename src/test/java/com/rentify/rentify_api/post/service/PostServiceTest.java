@@ -11,11 +11,14 @@ import com.rentify.rentify_api.category.entity.Category;
 import com.rentify.rentify_api.category.exception.CategoryNotFoundException;
 import com.rentify.rentify_api.category.repository.CategoryRepository;
 import com.rentify.rentify_api.common.exception.IdempotencyException;
+import com.rentify.rentify_api.common.exception.NotFoundException;
 import com.rentify.rentify_api.common.idempotency.IdempotencyKey;
 import com.rentify.rentify_api.common.idempotency.IdempotencyKeyRepository;
 import com.rentify.rentify_api.common.idempotency.IdempotencyStatus;
+import com.rentify.rentify_api.image.entity.Image;
 import com.rentify.rentify_api.image.service.ImageService;
 import com.rentify.rentify_api.post.dto.CreatePostRequest;
+import com.rentify.rentify_api.post.dto.PostDetailResponse;
 import com.rentify.rentify_api.post.entity.Post;
 import com.rentify.rentify_api.post.repository.PostHistoryRepository;
 import com.rentify.rentify_api.post.repository.PostRepository;
@@ -205,5 +208,71 @@ class PostServiceTest {
         verify(imageService, times(0)).saveImages(any(), any());
         verify(postHistoryRepository, times(0)).save(any());
         verify(postRepository, times(0)).save(any());
+    }
+
+    @Test
+    @DisplayName("게시글 상세 조회 성공")
+    void get_post_success() {
+        // given
+        Long postId = 1L;
+
+        User mockUser = User.builder()
+            .id(100L)
+            .name("테스트유저")
+            .build();
+
+        Category mockCategory = Category.builder()
+            .id(200L)
+            .name("전자기기")
+            .build();
+
+        Image mockImage1 = Image.builder().url("http://test.com/1.jpg").build();
+        Image mockImage2 = Image.builder().url("http://test.com/2.jpg").build();
+
+        Post mockPost = Post.builder()
+            .id(postId)
+            .title("테스트 제목")
+            .description("테스트 내용")
+            .pricePerDay(5000)
+            .maxRentalDays(5)
+            .isParcel(true)
+            .images(List.of(mockImage1, mockImage2))
+            .user(mockUser)
+            .category(mockCategory)
+            .build();
+
+        given(postRepository.findById(postId)).willReturn(Optional.of(mockPost));
+
+        // when
+        PostDetailResponse response = postService.getPost(postId);
+
+        // then
+        assertThat(response.getPostId()).isEqualTo(postId);
+        assertThat(response.getTitle()).isEqualTo("테스트 제목");
+        assertThat(response.getUserId()).isEqualTo(100L);
+        assertThat(response.getUserName()).isEqualTo("테스트유저");
+        assertThat(response.getCategoryName()).isEqualTo("전자기기");
+        assertThat(response.getImageUrls()).hasSize(2);
+        assertThat(response.getImageUrls()).containsExactly(
+            "http://test.com/1.jpg",
+            "http://test.com/2.jpg"
+        );
+
+        // verify
+        verify(postRepository, times(1)).findById(any());
+    }
+
+    @Test
+    @DisplayName("게시글 상세 조회 실패")
+    void get_post_notfound() {
+        // given
+        Long invalidPostId = 10L;
+
+        given(postRepository.findById(invalidPostId)).willReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> postService.getPost(invalidPostId))
+            .isInstanceOf(NotFoundException.class)
+            .hasMessage("게시글을 찾을 수 없습니다.");
     }
 }
