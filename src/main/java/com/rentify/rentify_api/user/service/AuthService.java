@@ -37,6 +37,7 @@ public class AuthService {
 //
 //        return (Long) authentication.getPrincipal();
 //    }
+
     public AuthMeResponse getMe(Long userId) {
 
         User user = userRepository.findById(userId)
