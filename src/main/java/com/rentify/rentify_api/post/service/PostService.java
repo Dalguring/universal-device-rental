@@ -9,8 +9,8 @@ import com.rentify.rentify_api.common.idempotency.IdempotencyKey;
 import com.rentify.rentify_api.common.idempotency.IdempotencyKeyRepository;
 import com.rentify.rentify_api.common.idempotency.IdempotencyStatus;
 import com.rentify.rentify_api.image.service.ImageService;
-import com.rentify.rentify_api.post.dto.PostFormRequest;
 import com.rentify.rentify_api.post.dto.PostDetailResponse;
+import com.rentify.rentify_api.post.dto.PostFormRequest;
 import com.rentify.rentify_api.post.entity.Post;
 import com.rentify.rentify_api.post.entity.PostHistory;
 import com.rentify.rentify_api.post.repository.PostHistoryRepository;
@@ -25,6 +25,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -116,8 +117,46 @@ public class PostService {
         return PostDetailResponse.from(post);
     }
 
-    public void updatePost(Long postId, Long userId, PostFormRequest request) {
+    @Transactional
+    public Long updatePost(Long postId, Long userId, PostFormRequest request) {
         Post post = postRepository.findById(postId)
             .orElseThrow(() -> new NotFoundException("게시글을 찾을 수 없습니다."));
+
+        if (!post.getUser().getId().equals(userId)) {
+            throw new AccessDeniedException("수정 권한이 없습니다.");
+        }
+
+        Category category = categoryRepository.findById(request.getCategoryId())
+            .orElseThrow(CategoryNotFoundException::new);
+
+        String beforePost = post.toJson();
+
+        post.update(
+            category,
+            request.getTitle(),
+            request.getDescription(),
+            request.getPricePerDay(),
+            request.getMaxRentalDays(),
+            request.getIsParcel(),
+            request.getIsMeetup(),
+            request.getStatus()
+        );
+
+        post.getImages().clear();
+        imageService.saveImages(post, request.getImageUrls());
+
+        String newThumbnail =
+            request.getImageUrls().isEmpty() ? null : request.getImageUrls().getFirst();
+        post.updateThumbnail(newThumbnail);
+
+        postHistoryRepository.save(
+            PostHistory.builder()
+                .postId(post.getId())
+                .beforeValue(beforePost)
+                .afterValue(post.toJson())
+                .build()
+        );
+
+        return post.getId();
     }
 }

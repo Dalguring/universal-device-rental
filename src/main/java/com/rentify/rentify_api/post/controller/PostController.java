@@ -1,9 +1,9 @@
 package com.rentify.rentify_api.post.controller;
 
 import com.rentify.rentify_api.common.response.ApiResponse;
-import com.rentify.rentify_api.post.dto.PostFormRequest;
-import com.rentify.rentify_api.post.dto.CreatePostResponse;
 import com.rentify.rentify_api.post.dto.PostDetailResponse;
+import com.rentify.rentify_api.post.dto.PostFormRequest;
+import com.rentify.rentify_api.post.dto.PostFormResponse;
 import com.rentify.rentify_api.post.entity.PostStatus;
 import com.rentify.rentify_api.post.service.PostService;
 import jakarta.validation.Valid;
@@ -52,7 +52,7 @@ public class PostController implements PostApiDocs {
 
     @PostMapping
     @Override
-    public ResponseEntity<ApiResponse<CreatePostResponse>> createPost(
+    public ResponseEntity<ApiResponse<PostFormResponse>> createPost(
         @RequestHeader(value = "Idempotency-Key") UUID idempotencyKey,
         @AuthenticationPrincipal Long userId,
         @Valid @RequestBody PostFormRequest request
@@ -60,18 +60,18 @@ public class PostController implements PostApiDocs {
         Long postId = postService.createPost(idempotencyKey, userId, request);
         URI location = URI.create("/api/posts/" + postId);
         return ResponseEntity.created(location)
-            .body(ApiResponse.success("게시글이 생성되었습니다.", new CreatePostResponse(postId)));
+            .body(ApiResponse.success("게시글이 생성되었습니다.", new PostFormResponse(postId)));
     }
 
-    @Override
     @PutMapping("{id}")
-    public ResponseEntity<ApiResponse<Void>> updatePost(
+    @Override
+    public ResponseEntity<ApiResponse<PostFormResponse>> updatePost(
         @PathVariable Long id,
         @AuthenticationPrincipal Long userId,
         @Valid @RequestBody PostFormRequest request
     ) {
-        postService.updatePost(id, userId, request);
-        return ResponseEntity.ok(ApiResponse.success());
+        Long postId = postService.updatePost(id, userId, request);
+        return ResponseEntity.ok(ApiResponse.success("게시글 수정 성공", new PostFormResponse(postId)));
     }
 
 }

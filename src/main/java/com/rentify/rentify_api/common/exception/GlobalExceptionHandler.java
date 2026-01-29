@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -15,42 +16,42 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Void>> handleValidationException(
-            MethodArgumentNotValidException ex
+        MethodArgumentNotValidException ex
     ) {
         String message = ex.getBindingResult()
-                .getFieldErrors()
-                .stream()
-                .findFirst()
-                .map(error -> error.getField() + " : " + error.getDefaultMessage())
-                .orElse("요청 값이 올바르지 않습니다.");
+            .getFieldErrors()
+            .stream()
+            .findFirst()
+            .map(error -> error.getField() + " : " + error.getDefaultMessage())
+            .orElse("요청 값이 올바르지 않습니다.");
 
         log.warn("Validation failed: {}", message);
 
         return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error("INVALID_REQUEST", message));
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ApiResponse.error("INVALID_REQUEST", message));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiResponse<Void>> handleJsonParseException(
-            HttpMessageNotReadableException ex
+        HttpMessageNotReadableException ex
     ) {
         log.warn("JSON parse error: {}", ex.getMessage());
 
         return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error("INVALID_JSON", "요청 본문(JSON)이 올바르지 않습니다."));
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ApiResponse.error("INVALID_JSON", "요청 본문(JSON)이 올바르지 않습니다."));
     }
 
     @ExceptionHandler(DuplicateException.class)
     public ResponseEntity<ApiResponse<Void>> handleDuplicateException(
-            DuplicateException ex
+        DuplicateException ex
     ) {
         log.warn("Duplicate resource detected: {}", ex.getMessage());
 
         return ResponseEntity
-                .status(HttpStatus.CONFLICT)
-                .body(ApiResponse.error("DUPLICATE", ex.getMessage()));
+            .status(HttpStatus.CONFLICT)
+            .body(ApiResponse.error("DUPLICATE", ex.getMessage()));
     }
 
     @ExceptionHandler(NotFoundException.class)
@@ -58,8 +59,8 @@ public class GlobalExceptionHandler {
         log.warn("Resource not found: {}", ex.getMessage());
 
         return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(ApiResponse.error("NOT_FOUND", ex.getMessage()));
+            .status(HttpStatus.NOT_FOUND)
+            .body(ApiResponse.error("NOT_FOUND", ex.getMessage()));
     }
 
     @ExceptionHandler(IdempotencyException.class)
@@ -67,8 +68,8 @@ public class GlobalExceptionHandler {
         log.warn("Idempotency issue: {}", ex.getMessage());
 
         return ResponseEntity
-                .status(HttpStatus.CONFLICT)
-                .body(ApiResponse.error("PROCESS_IN_PROGRESS", ex.getMessage()));
+            .status(HttpStatus.CONFLICT)
+            .body(ApiResponse.error("PROCESS_IN_PROGRESS", ex.getMessage()));
     }
 
     @ExceptionHandler(FileException.class)
@@ -95,25 +96,37 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(InvalidPasswordException.class)
-    public ResponseEntity<ApiResponse<Void>> handleInvalidPasswordException(InvalidPasswordException ex){
+    public ResponseEntity<ApiResponse<Void>> handleInvalidPasswordException(
+        InvalidPasswordException ex) {
         log.warn("Invalid password: {}", ex.getMessage());
 
         return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
-                .body(ApiResponse.error(
-                        "INVALID_PASSWORD", ex.getMessage()
-                ));
+            .status(HttpStatus.UNAUTHORIZED)
+            .body(ApiResponse.error(
+                "INVALID_PASSWORD", ex.getMessage()
+            ));
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAccessDeniedException(AccessDeniedException ex) {
+        log.warn("Access Denied: {}", ex.getMessage());
+
+        return ResponseEntity
+            .status(HttpStatus.FORBIDDEN)
+            .body(ApiResponse.error(
+                "ACCESS_DENIED", ex.getMessage()
+            ));
     }
 
     @ExceptionHandler(AccountDeactivatedException.class)
-    public ResponseEntity<ApiResponse<Void>> handleAccountDeactivatedException(AccountDeactivatedException ex){
+    public ResponseEntity<ApiResponse<Void>> handleAccountDeactivatedException(
+        AccountDeactivatedException ex) {
         log.warn("Authentication failed : {}", ex.getMessage());
 
         return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
-                .body(ApiResponse.error(
-                        "ACCOUNT_DEACTIVATED", ex.getMessage()
-                ));
+            .status(HttpStatus.UNAUTHORIZED)
+            .body(ApiResponse.error(
+                "ACCOUNT_DEACTIVATED", ex.getMessage()
+            ));
     }
-
 }

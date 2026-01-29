@@ -113,4 +113,24 @@ public class Post {
             throw new RuntimeException("JSON 변환 실패", e);
         }
     }
+
+    public void update(Category category, String title, String description,
+        Integer pricePerDay, Integer maxRentalDays, Boolean isParcel, Boolean isMeetup,
+        PostStatus status) {
+        this.category = category;
+        this.title = title;
+        this.description = description;
+        this.pricePerDay = pricePerDay;
+        this.maxRentalDays = maxRentalDays;
+        this.isParcel = isParcel;
+        this.isMeetup = isMeetup;
+
+        if (status != null) {
+            this.status = status;
+        }
+    }
+
+    public void updateThumbnail(String thumbnailUrl) {
+        this.thumbnailUrl = thumbnailUrl;
+    }
 }
