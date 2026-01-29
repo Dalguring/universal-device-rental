@@ -50,7 +50,7 @@ public interface PostApiDocs {
                         {
                             "success": true,
                             "code": "SUCCESS",
-                            "message": "요청이 성공했습니다.",
+                            "message": "요청이 성공적으로 처리되었습니다.",
                             "data": {
                                 "categoryName": "갤럭시 울트라",
                                 "createAt": "2026-01-28T20:55:58.522954",

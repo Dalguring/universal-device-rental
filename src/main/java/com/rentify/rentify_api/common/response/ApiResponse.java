@@ -14,7 +14,7 @@ public class ApiResponse<T> {
 
     // success
     public static <T> ApiResponse<T> success(T data) {
-        return new ApiResponse<>(true, "SUCCESS", "요청이 성공했습니다.", data);
+        return new ApiResponse<>(true, "SUCCESS", "요청이 성공적으로 처리되었습니다.", data);
     }
 
     public static <T> ApiResponse<T> success(String message, T data) {
@@ -22,7 +22,7 @@ public class ApiResponse<T> {
     }
 
     public static ApiResponse<Void> success() {
-        return new ApiResponse<>(true, "SUCCESS", "요청이 성공했습니다.", null);
+        return new ApiResponse<>(true, "SUCCESS", "요청이 성공적으로 처리되었습니다.", null);
     }
 
     public static ApiResponse<Void> success(String message) {

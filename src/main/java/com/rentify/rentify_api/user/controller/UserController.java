@@ -6,6 +6,8 @@ import com.rentify.rentify_api.user.dto.LoginRequest;
 import com.rentify.rentify_api.user.dto.UserResponse;
 import com.rentify.rentify_api.user.entity.LoginResponse;
 import com.rentify.rentify_api.user.service.UserService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.UUID;
@@ -47,10 +49,19 @@ public class UserController implements UserApiDocs {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<LoginResponse>> login(@RequestBody LoginRequest request) {
+    @Override
+    public ResponseEntity<ApiResponse<Void>> login(@RequestBody LoginRequest request, HttpServletResponse httpResponse) {
         LoginResponse response = userService.login(request);
 
-        return ResponseEntity.ok(ApiResponse.success(response));
+        // JWT 토큰 쿠키 설정
+        Cookie cookie = new Cookie("accessToken", response.getAccessToken());
+        cookie.setHttpOnly(true);    // XSS 공격 방지
+        //cookie.setSecure(true);    // HTTPS에서만 전송
+        cookie.setPath("/");
+        cookie.setMaxAge(24 * 60 * 60);  // 24시간 (초 단위)
+        httpResponse.addCookie(cookie);
+
+        return ResponseEntity.ok(ApiResponse.success("로그인 성공"));
     }
 
     @PostMapping("/logout")
