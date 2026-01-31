@@ -17,14 +17,15 @@ import com.rentify.rentify_api.common.idempotency.IdempotencyKeyRepository;
 import com.rentify.rentify_api.common.idempotency.IdempotencyStatus;
 import com.rentify.rentify_api.image.entity.Image;
 import com.rentify.rentify_api.image.service.ImageService;
-import com.rentify.rentify_api.post.dto.PostFormRequest;
 import com.rentify.rentify_api.post.dto.PostDetailResponse;
+import com.rentify.rentify_api.post.dto.PostFormRequest;
 import com.rentify.rentify_api.post.entity.Post;
 import com.rentify.rentify_api.post.repository.PostHistoryRepository;
 import com.rentify.rentify_api.post.repository.PostRepository;
 import com.rentify.rentify_api.user.entity.User;
 import com.rentify.rentify_api.user.exception.UserNotFoundException;
 import com.rentify.rentify_api.user.repository.UserRepository;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.access.AccessDeniedException;
 
 @ExtendWith(MockitoExtension.class)
 class PostServiceTest {
@@ -274,5 +276,95 @@ class PostServiceTest {
         assertThatThrownBy(() -> postService.getPost(invalidPostId))
             .isInstanceOf(NotFoundException.class)
             .hasMessage("게시글을 찾을 수 없습니다.");
+    }
+
+    @Test
+    @DisplayName("게시글 수정 성공")
+    void update_post_success() {
+        // given
+        Long postId = 1L;
+
+        User mockUser = User.builder()
+            .id(userId)
+            .build();
+
+        Post mockPost = Post.builder()
+            .id(postId)
+            .title("테스트 제목")
+            .description("테스트 내용")
+            .maxRentalDays(90)
+            .user(mockUser)
+            .isParcel(true)
+            .isMeetup(false)
+            .thumbnailUrl("http://old-image.com/old.jpg")
+            .images(new ArrayList<>())
+            .build();
+
+        Category mockCategory = Category.builder()
+            .id(request.getCategoryId())
+            .name("테스트 카테고리")
+            .build();
+
+        request.setTitle("수정 테스트 제목");
+        request.setDescription("수정 테스트 내용");
+        request.setPricePerDay(5000);
+        request.setMaxRentalDays(90);
+        request.setIsParcel(true);
+        request.setIsMeetup(false);
+        request.setImageUrls(List.of("http://new-image.com/new.jpg"));
+
+        given(postRepository.findById(postId)).willReturn(Optional.of(mockPost));
+        given(categoryRepository.findById(request.getCategoryId()))
+            .willReturn(Optional.of(mockCategory));
+
+        // when
+        postService.updatePost(postId, userId, request);
+
+        // then
+        assertThat(mockPost.getTitle()).isEqualTo("수정 테스트 제목");
+        assertThat(mockPost.getDescription()).isEqualTo("수정 테스트 내용");
+        assertThat(mockPost.getMaxRentalDays()).isEqualTo(90);
+        assertThat(mockPost.getThumbnailUrl()).isEqualTo("http://new-image.com/new.jpg");
+
+        // verify
+        verify(imageService, times(1)).saveImages(any(), any());
+        verify(postHistoryRepository, times(1)).save(any());
+        verify(postRepository, times(0)).save(any());
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 게시글 수정 요청")
+    void not_found_post() {
+        // given
+        Long invalidPostId = 10L;
+
+        given(postRepository.findById(invalidPostId)).willReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> postService.updatePost(invalidPostId, userId, request))
+            .isInstanceOf(NotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("권한이 없는 사용자가 게시글 수정 요청")
+    void unauthorized_update_post_request() {
+        // given
+        Long postId = 1L;
+
+        User mockUser = User.builder()
+            .id(10L)
+            .build();
+
+        Post mockPost = Post.builder()
+            .id(postId)
+            .user(mockUser)
+            .build();
+
+        given(postRepository.findById(postId)).willReturn(Optional.of(mockPost));
+
+        // when & then
+        assertThatThrownBy(() -> postService.updatePost(postId, userId, request))
+            .isInstanceOf(AccessDeniedException.class)
+            .hasMessage("수정 권한이 없습니다.");
     }
 }
