@@ -1,5 +1,6 @@
 package com.rentify.rentify_api.post.dto;
 
+import com.rentify.rentify_api.post.entity.PostStatus;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -11,7 +12,7 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class CreatePostRequest {
+public class PostFormRequest {
 
     @NotNull(message = "Category ID is required")
     private Long categoryId;
@@ -36,6 +37,8 @@ public class CreatePostRequest {
 
     @NotNull(message = "Meetup available is required")
     private Boolean isMeetup;
+
+    private PostStatus status;
 
     private List<@Pattern(
         regexp = "^http://[^/]+/images/.*",

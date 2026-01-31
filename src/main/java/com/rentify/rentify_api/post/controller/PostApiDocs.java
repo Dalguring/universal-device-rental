@@ -1,8 +1,8 @@
 package com.rentify.rentify_api.post.controller;
 
-import com.rentify.rentify_api.post.dto.CreatePostRequest;
-import com.rentify.rentify_api.post.dto.CreatePostResponse;
 import com.rentify.rentify_api.post.dto.PostDetailResponse;
+import com.rentify.rentify_api.post.dto.PostFormRequest;
+import com.rentify.rentify_api.post.dto.PostFormResponse;
 import com.rentify.rentify_api.post.entity.PostStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -25,6 +25,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -225,7 +226,7 @@ public interface PostApiDocs {
         )
     })
     @PostMapping
-    ResponseEntity<com.rentify.rentify_api.common.response.ApiResponse<CreatePostResponse>> createPost(
+    ResponseEntity<com.rentify.rentify_api.common.response.ApiResponse<PostFormResponse>> createPost(
         @Parameter(
             name = "Idempotency-Key",
             description = "중복 요청 방지를 위한 멱등성 키",
@@ -240,7 +241,7 @@ public interface PostApiDocs {
             required = true,
             content = @Content(
                 mediaType = "application/json",
-                schema = @Schema(implementation = CreatePostRequest.class),
+                schema = @Schema(implementation = PostFormRequest.class),
                 examples = @ExampleObject(
                     value = """
                     {
@@ -257,10 +258,146 @@ public interface PostApiDocs {
                 )
             )
         )
-        @Valid CreatePostRequest request
+        @Valid PostFormRequest request
     );
 
-    ResponseEntity<com.rentify.rentify_api.common.response.ApiResponse<Void>> updatePost(
-        @PathVariable Long postId
+    @Operation(summary = "게시글 수정", description = "게시글을 수정합니다.<br/><strong>수정된 전체 내용 전송 필수</strong>")
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "게시글 수정 성공",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = """
+                        {
+                            "success": true,
+                            "code": "SUCCESS",
+                            "message": "게시글 수정 성공",
+                            "data": {
+                                "postId": 1
+                            }
+                        }
+                        """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "요청 데이터 검증 실패",
+            content = @Content(
+                mediaType = "application/json",
+                examples = {
+                    @ExampleObject(
+                        name = "카테고리 ID 필수",
+                        value = """
+                            {
+                                "success": false,
+                                "code": "INVALID_REQUEST",
+                                "message": "categoryId : Category ID is required",
+                                "data": null
+                            }
+                            """
+                    ),
+                    @ExampleObject(
+                        name = "제목 필수",
+                        value = """
+                            {
+                                "success": false,
+                                "code": "INVALID_REQUEST",
+                                "message": "title : Title is required",
+                                "data": null
+                            }
+                            """
+                    )
+                }
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "존재하지 않는 데이터를 파라미터로 전달",
+            content = @Content(
+                mediaType = "application/json",
+                examples = {
+                    @ExampleObject(
+                        name = "게시글 조회 실패",
+                        summary = "존재하지 않는 게시글",
+                        value = """
+                            {
+                                "success": false,
+                                "code": "NOT_FOUND",
+                                "message": "게시글을 찾을 수 없습니다.",
+                                "data": null
+                            }
+                            """
+                    ),
+                    @ExampleObject(
+                        name = "카테고리 ID 조회 실패",
+                        summary = "존재하지 않는 카테고리",
+                        value = """
+                            {
+                                "success": false,
+                                "code": "NOT_FOUND",
+                                "message": "등록되지 않은 카테고리입니다.",
+                                "data": null
+                            }
+                            """
+                    )
+                }
+            )
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "수정 권한 없음",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = """
+                        {
+                            "success": false,
+                            "code": "ACCESS_DENIED",
+                            "message": "수정 권한이 없습니다.",
+                            "data": null
+                        }
+                        """
+                )
+            )
+        )
+    })
+    @PutMapping("{id}")
+    ResponseEntity<com.rentify.rentify_api.common.response.ApiResponse<PostFormResponse>> updatePost(
+        @Parameter(
+            name = "id",
+            description = "게시글 ID",
+            required = true,
+            in = ParameterIn.PATH,
+            example = "1"
+        )
+        @PathVariable Long id,
+        @AuthenticationPrincipal Long userId,
+        @RequestBody(
+            description = "게시글 수정 요청 데이터",
+            required = true,
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = PostFormRequest.class),
+                examples = @ExampleObject(
+                    value = """
+                    {
+                        "categoryId": 1,
+                        "title": "title",
+                        "description": "description",
+                        "pricePerDay": 50000,
+                        "maxRentalDays": 30,
+                        "isParcel": true,
+                        "isMeetup": false,
+                        "status": "RESERVED",
+                        "imageUrls": ["http://backend.server.ip/images/1.jpg", "http://backend.server.ip/images/1.png"]
+                    }
+                    """
+                )
+            )
+        )
+        @Valid @org.springframework.web.bind.annotation.RequestBody PostFormRequest request
     );
 }
