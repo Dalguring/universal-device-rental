@@ -3,7 +3,6 @@ package com.rentify.rentify_api.post.controller;
 import com.rentify.rentify_api.post.dto.PostDetailResponse;
 import com.rentify.rentify_api.post.dto.PostFormRequest;
 import com.rentify.rentify_api.post.dto.PostFormResponse;
-import com.rentify.rentify_api.post.entity.PostStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -17,7 +16,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -32,11 +33,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Tag(name = "Post API", description = "게시글 조회, 생성, 수정 관련 API")
 public interface PostApiDocs {
 
-    ResponseEntity<com.rentify.rentify_api.common.response.ApiResponse<Void>> getPosts(
-        @RequestParam Long categoryId,
-        @RequestParam PostStatus status,
-        @RequestParam String keyword,
-        @PageableDefault Pageable pageable
+    @GetMapping
+    ResponseEntity<com.rentify.rentify_api.common.response.ApiResponse<Page<PostDetailResponse>>> getPosts(
+        @RequestParam(required = false) Long categoryId,
+        @RequestParam(required = false) String status,
+        @RequestParam(required = false) String keyword,
+        @PageableDefault(sort = "createAt", direction = Sort.Direction.DESC) Pageable pageable
     );
 
     @Operation(summary = "게시글 상세 조회", description = "게시글을 상세 조회합니다.")

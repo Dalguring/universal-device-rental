@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -33,14 +34,16 @@ public class PostController implements PostApiDocs {
     private final PostService postService;
 
     @Override
-    @GetMapping()
-    public ResponseEntity<ApiResponse<Void>> getPosts(
+    @GetMapping
+    public ResponseEntity<ApiResponse<Page<PostDetailResponse>>> getPosts(
         @RequestParam(required = false) Long categoryId,
-        @RequestParam(required = false) PostStatus status,
+        @RequestParam(required = false) String status,
         @RequestParam(required = false) String keyword,
         @PageableDefault(sort = "createAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        return ResponseEntity.ok(ApiResponse.success());
+        Page<PostDetailResponse> postPage =
+            postService.getPosts(categoryId, status, keyword, pageable);
+        return ResponseEntity.ok(ApiResponse.success(postPage));
     }
 
     @Override
@@ -50,8 +53,8 @@ public class PostController implements PostApiDocs {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
-    @PostMapping
     @Override
+    @PostMapping
     public ResponseEntity<ApiResponse<PostFormResponse>> createPost(
         @RequestHeader(value = "Idempotency-Key") UUID idempotencyKey,
         @AuthenticationPrincipal Long userId,
@@ -63,8 +66,8 @@ public class PostController implements PostApiDocs {
             .body(ApiResponse.success("게시글이 생성되었습니다.", new PostFormResponse(postId)));
     }
 
-    @PutMapping("{id}")
     @Override
+    @PutMapping("{id}")
     public ResponseEntity<ApiResponse<PostFormResponse>> updatePost(
         @PathVariable Long id,
         @AuthenticationPrincipal Long userId,

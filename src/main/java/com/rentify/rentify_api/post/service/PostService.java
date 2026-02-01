@@ -4,6 +4,7 @@ import com.rentify.rentify_api.category.entity.Category;
 import com.rentify.rentify_api.category.exception.CategoryNotFoundException;
 import com.rentify.rentify_api.category.repository.CategoryRepository;
 import com.rentify.rentify_api.common.exception.IdempotencyException;
+import com.rentify.rentify_api.common.exception.InvalidValueException;
 import com.rentify.rentify_api.common.exception.NotFoundException;
 import com.rentify.rentify_api.common.idempotency.IdempotencyKey;
 import com.rentify.rentify_api.common.idempotency.IdempotencyKeyRepository;
@@ -13,6 +14,7 @@ import com.rentify.rentify_api.post.dto.PostDetailResponse;
 import com.rentify.rentify_api.post.dto.PostFormRequest;
 import com.rentify.rentify_api.post.entity.Post;
 import com.rentify.rentify_api.post.entity.PostHistory;
+import com.rentify.rentify_api.post.entity.PostStatus;
 import com.rentify.rentify_api.post.repository.PostHistoryRepository;
 import com.rentify.rentify_api.post.repository.PostRepository;
 import com.rentify.rentify_api.user.entity.User;
@@ -21,10 +23,14 @@ import com.rentify.rentify_api.user.repository.UserRepository;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +46,43 @@ public class PostService {
     private final CategoryRepository categoryRepository;
     private final PostHistoryRepository postHistoryRepository;
     private final ImageService imageService;
+
+    private static final Set<String> ALLOWED_SORT_FILTERS = Set.of(
+        "createAt", "pricePerDay", "title", "id"
+    );
+
+    @Transactional(readOnly = true)
+    public Page<PostDetailResponse> getPosts(
+        Long categoryId, String statusStr, String keyword, Pageable pageable
+    ) {
+        if (categoryId != null) {
+            categoryRepository.findById(categoryId)
+                .orElseThrow(CategoryNotFoundException::new);
+        }
+
+        PostStatus status = null;
+
+        if (statusStr != null && !statusStr.isBlank()) {
+            try {
+                status = PostStatus.valueOf(statusStr.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                throw new InvalidValueException("유효하지 않은 게시글 상태입니다.");
+            }
+        }
+
+        validateSort(pageable);
+
+        Page<Post> posts = postRepository.findAllSearch(categoryId, status, keyword, pageable);
+        return posts.map(PostDetailResponse::from);
+    }
+
+    @Transactional(readOnly = true)
+    public PostDetailResponse getPost(Long postId) {
+        Post post = postRepository.findById(postId)
+            .orElseThrow(() -> new NotFoundException("게시글을 찾을 수 없습니다."));
+
+        return PostDetailResponse.from(post);
+    }
 
     @Transactional
     public Long createPost(UUID idempotencyKey, Long userId, PostFormRequest request) {
@@ -109,14 +152,6 @@ public class PostService {
         }
     }
 
-    @Transactional(readOnly = true)
-    public PostDetailResponse getPost(Long postId) {
-        Post post = postRepository.findById(postId)
-            .orElseThrow(() -> new NotFoundException("게시글을 찾을 수 없습니다."));
-
-        return PostDetailResponse.from(post);
-    }
-
     @Transactional
     public Long updatePost(Long postId, Long userId, PostFormRequest request) {
         Post post = postRepository.findById(postId)
@@ -158,5 +193,20 @@ public class PostService {
         );
 
         return post.getId();
+    }
+
+    private void validateSort(Pageable pageable) {
+        if (pageable.getSort().isSorted()) {
+            for (Sort.Order order : pageable.getSort()) {
+                if (!ALLOWED_SORT_FILTERS.contains(order.getProperty())) {
+                    throw new InvalidValueException(
+                        String.format(
+                            "정렬 기준 '%s'은(는) 지원하지 않습니다. (허용 필드: %s)",
+                            order.getProperty(), ALLOWED_SORT_FILTERS
+                        )
+                    );
+                }
+            }
+        }
     }
 }
