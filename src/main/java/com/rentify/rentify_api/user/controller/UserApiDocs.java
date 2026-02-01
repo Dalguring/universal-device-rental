@@ -18,6 +18,7 @@ import jakarta.validation.Valid;
 import java.util.UUID;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 
@@ -153,7 +154,44 @@ public interface UserApiDocs {
                 )
             )
         )
-        @org.springframework.web.bind.annotation.RequestBody LoginRequest request,
-        HttpServletResponse httpResponse
+        @org.springframework.web.bind.annotation.RequestBody LoginRequest request, HttpServletResponse httpResponse
     );
+
+    @Operation(summary = "로그아웃", description = "로그아웃하여 RefreshToken 및 쿠키의 토큰 제거합니다.")
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "로그아웃 성공 (쿠키의 토큰들이 삭제됨)",
+            headers = {
+                @Header(
+                    name = "Set-Cookie",
+                    description = "accessToken 삭제 (Max-Age=0)",
+                    schema = @Schema(type = "string", example = "accessToken=; Path=/; Max-Age=0; HttpOnly")
+                ),
+                @Header(
+                    name = "Set-Cookie",
+                    description = "refreshToken 삭제 (Max-Age=0)",
+                    schema = @Schema(type = "string", example = "refreshToken=; Path=/; Max-Age=0; HttpOnly")
+                )
+            },
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = "{\"success\": true, \"code\": \"SUCCESS\", \"message\": \"로그아웃 성공\", \"data\": null}"
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "인증 실패 (토큰이 없거나 유효하지 않음)",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = "{\"success\": false, \"code\": \"UNAUTHORIZED\", \"message\": \"인증이 필요합니다.\", \"data\": null}"
+                )
+            )
+        )
+    })
+    @PostMapping("/logout")
+    ResponseEntity<com.rentify.rentify_api.common.response.ApiResponse<Void>> logout(@Parameter(hidden = true) @AuthenticationPrincipal Long userId, HttpServletResponse response);
 }

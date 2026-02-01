@@ -6,6 +6,7 @@ import com.rentify.rentify_api.user.dto.LoginRequest;
 import com.rentify.rentify_api.user.dto.UserResponse;
 import com.rentify.rentify_api.user.entity.LoginResponse;
 import com.rentify.rentify_api.user.service.UserService;
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 @RestController
 @Slf4j
@@ -42,6 +44,7 @@ public class UserController implements UserApiDocs {
         return ResponseEntity.created(location).body(ApiResponse.success("회원가입 성공"));
     }
 
+    @Hidden
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<UserResponse>> getUserById(@PathVariable Long id) {
         UserResponse response = userService.getUserInfo(id);
@@ -53,20 +56,46 @@ public class UserController implements UserApiDocs {
     public ResponseEntity<ApiResponse<Void>> login(@RequestBody LoginRequest request, HttpServletResponse httpResponse) {
         LoginResponse response = userService.login(request);
 
-        // JWT 토큰 쿠키 설정
-        Cookie cookie = new Cookie("accessToken", response.getAccessToken());
-        cookie.setHttpOnly(true);    // XSS 공격 방지
-        //cookie.setSecure(true);    // HTTPS에서만 전송
-        cookie.setPath("/");
-        cookie.setMaxAge(24 * 60 * 60);  // 24시간 (초 단위)
-        httpResponse.addCookie(cookie);
+        // AccessToken 쿠키 설정
+        Cookie accessTokenCookie = new Cookie("accessToken", response.getAccessToken());
+        accessTokenCookie.setHttpOnly(true);    // XSS 공격 방지
+        //accessTokenCookie.setSecure(true);    // HTTPS에서만 전송
+        accessTokenCookie.setPath("/");
+        accessTokenCookie.setMaxAge(30 * 60);  // 30분
+        httpResponse.addCookie(accessTokenCookie);
+
+        // RefreshToken 쿠키 설정
+        Cookie refreshTokenCookie = new Cookie("refreshToken", response.getRefreshToken());
+        refreshTokenCookie.setHttpOnly(true);
+        //refreshTokenCookie.setSecure(true);
+        refreshTokenCookie.setPath("/");
+        refreshTokenCookie.setMaxAge(14 * 24 * 60 * 60);  // 14일
+        httpResponse.addCookie(refreshTokenCookie);
 
         return ResponseEntity.ok(ApiResponse.success("로그인 성공"));
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse<Void>> logout() {
-        return ResponseEntity.ok(ApiResponse.success());
+    @Override
+    public ResponseEntity<ApiResponse<Void>> logout(@AuthenticationPrincipal Long userId, HttpServletResponse response) {
+        // RefreshToken DB에서 삭제
+        userService.logout(userId);
+
+        // AccessToken 쿠키 삭제
+        Cookie accessTokenCookie = new Cookie("accessToken", null);
+        accessTokenCookie.setHttpOnly(true);
+        accessTokenCookie.setPath("/");
+        accessTokenCookie.setMaxAge(0);  // 즉시 만료
+        response.addCookie(accessTokenCookie);
+
+        // RefreshToken 쿠키 삭제
+        Cookie refreshTokenCookie = new Cookie("refreshToken", null);
+        refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setPath("/");
+        refreshTokenCookie.setMaxAge(0);  // 즉시 만료
+        response.addCookie(refreshTokenCookie);
+
+        return ResponseEntity.ok(ApiResponse.success("로그아웃 성공"));
     }
 
 }

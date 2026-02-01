@@ -153,4 +153,39 @@ public class UserService {
             .isActive(user.getIsActive())
             .build();
     }
+
+    @Transactional
+    public String refreshAccessToken(String refreshTokenString) {
+        // DB에서 RefreshToken 조회
+        RefreshToken refreshToken = refreshtokenRepository.findByToken(refreshTokenString)
+            .orElseThrow(() -> new NotFoundException("RefreshToken을 찾을 수 없습니다."));
+
+        // RefreshToken 만료 또는 무효 확인
+        if (refreshToken.isExpired() || refreshToken.isRevoked()) {
+            throw new NotFoundException("만료되거나 무효화된 RefreshToken입니다.");
+        }
+
+        // 유저 확인
+        User user = userRepository.findById(refreshToken.getUserId())
+            .orElseThrow(UserNotFoundException::new);
+
+        if (!user.getIsActive()) {
+            throw new AccountDeactivatedException("비활성화된 계정입니다.");
+        }
+
+        // [옵션] RefreshToken 만료 기간 연장 (Sliding Window 방식)
+        // 사용자가 계속 사이트를 사용하는 동안에는 영구적으로 로그인 상태 유지
+        // 아래 주석을 해제하면 활성화됩니다.
+        // refreshToken.updateExpiredAt(LocalDateTime.now().plusDays(14));
+        // refreshtokenRepository.save(refreshToken);
+
+        // 새로운 AccessToken 발급
+        return jwtTokenProvider.createAccessToken(user.getId());
+    }
+
+    @Transactional
+    public void logout(Long userId) {
+        // DB에서 해당 유저의 모든 RefreshToken 삭제
+        refreshtokenRepository.deleteByUserId(userId);
+    }
 }
