@@ -118,6 +118,17 @@ public class GlobalExceptionHandler {
             ));
     }
 
+    @ExceptionHandler(InvalidValueException.class)
+    public ResponseEntity<ApiResponse<Void>> handleInvalidValueException(InvalidValueException ex) {
+        log.warn("Invalid value: {}", ex.getMessage());
+
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ApiResponse.error(
+                "INVALID_VALUE", ex.getMessage())
+            );
+    }
+
     @ExceptionHandler(AccountDeactivatedException.class)
     public ResponseEntity<ApiResponse<Void>> handleAccountDeactivatedException(
         AccountDeactivatedException ex) {
