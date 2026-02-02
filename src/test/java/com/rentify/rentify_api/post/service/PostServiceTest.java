@@ -38,6 +38,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AccessDeniedException;
 
 @ExtendWith(MockitoExtension.class)
@@ -366,5 +371,30 @@ class PostServiceTest {
         assertThatThrownBy(() -> postService.updatePost(postId, userId, request))
             .isInstanceOf(AccessDeniedException.class)
             .hasMessage("수정 권한이 없습니다.");
+    }
+
+    @Test
+    @DisplayName("게시글 전체 조회 성공")
+    void get_posts_success() {
+        // given
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("createAt").descending());
+
+        Post mockPost = Post.builder()
+            .id(1L)
+            .title("검색된 게시글")
+            .description("내용")
+            .user(User.builder().id(1L).name("테스트유저").build())
+            .category(Category.builder().id(1L).name("테스트카테고리").build())
+            .images(new ArrayList<>())
+            .build();
+
+        Page<Post> mockPage = new PageImpl<>(List.of(mockPost), pageable, 1);
+
+        given(postRepository.findAllSearch(null, null, null, pageable)).willReturn(mockPage);
+
+        Page<PostDetailResponse> result = postService.getPosts(null, null, null, pageable);
+
+        assertThat(result.getTotalElements()).isEqualTo(1);
+        assertThat(result.getContent().get(0).getTitle()).isEqualTo("검색된 게시글");
     }
 }
