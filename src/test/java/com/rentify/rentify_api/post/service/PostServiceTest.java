@@ -11,6 +11,7 @@ import com.rentify.rentify_api.category.entity.Category;
 import com.rentify.rentify_api.category.exception.CategoryNotFoundException;
 import com.rentify.rentify_api.category.repository.CategoryRepository;
 import com.rentify.rentify_api.common.exception.IdempotencyException;
+import com.rentify.rentify_api.common.exception.InvalidValueException;
 import com.rentify.rentify_api.common.exception.NotFoundException;
 import com.rentify.rentify_api.common.idempotency.IdempotencyKey;
 import com.rentify.rentify_api.common.idempotency.IdempotencyKeyRepository;
@@ -38,6 +39,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AccessDeniedException;
 
 @ExtendWith(MockitoExtension.class)
@@ -366,5 +372,86 @@ class PostServiceTest {
         assertThatThrownBy(() -> postService.updatePost(postId, userId, request))
             .isInstanceOf(AccessDeniedException.class)
             .hasMessage("수정 권한이 없습니다.");
+    }
+
+    @Test
+    @DisplayName("게시글 전체 조회 성공")
+    void get_posts_success() {
+        // given
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("createAt").descending());
+
+        Post mockPost = Post.builder()
+            .id(1L)
+            .title("검색된 게시글")
+            .description("내용")
+            .user(User.builder().id(1L).name("테스트유저").build())
+            .category(Category.builder().id(1L).name("테스트카테고리").build())
+            .images(new ArrayList<>())
+            .build();
+
+        Page<Post> mockPage = new PageImpl<>(List.of(mockPost), pageable, 1);
+
+        given(postRepository.findAllSearch(null, null, null, pageable)).willReturn(mockPage);
+
+        // when
+        Page<PostDetailResponse> result = postService.getPosts(null, null, null, pageable);
+
+        // then
+        assertThat(result.getTotalElements()).isEqualTo(1);
+        assertThat(result.getContent().get(0).getTitle()).isEqualTo("검색된 게시글");
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 카테고리 전달 시 게시글 조회 실패")
+    void get_posts_failed_by_category() {
+        // given
+        Long categoryId = 100L;
+
+        given(categoryRepository.findById(categoryId)).willReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> postService.getPosts(categoryId, null, null, Pageable.unpaged()))
+            .isInstanceOf(CategoryNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 상태값 전달 시 게시글 조회 실패")
+    void get_posts_failed_by_status() {
+        // given
+        String status = "NOT_FOUND_STATUS";
+
+        // when & then
+        assertThatThrownBy(() -> postService.getPosts(null, status, null, Pageable.unpaged()))
+            .isInstanceOf(InvalidValueException.class);
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 정렬순서 전달 시 게시글 조회 실패")
+    void get_posts_failed_by_page_sort() {
+        // given
+        Pageable pageable = PageRequest.of(0, 5, Sort.by("not_exists_sort").descending());
+
+        // when & then
+        assertThatThrownBy(() -> postService.getPosts(null, null, null, pageable))
+            .isInstanceOf(InvalidValueException.class)
+            .hasMessageContaining("정렬 기준 'not_exists_sort'은(는) 지원하지 않습니다");
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 키워드 전달 시 게시글 조회 내용 없음")
+    void get_posts_none_by_keyword() {
+        // given
+        Pageable pageable = Pageable.unpaged();
+        String keyword = "not_exist_keyword";
+
+        given(postRepository.findAllSearch(null, null, keyword, pageable)).willReturn(Page.empty());
+
+        // when
+        Page<PostDetailResponse> result = postService.getPosts(null, null, keyword, pageable);
+
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).isEmpty();
+        assertThat(result.getTotalElements()).isEqualTo(0);
     }
 }
