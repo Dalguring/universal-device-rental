@@ -5,6 +5,8 @@ services:
     image: postgres:16
     container_name: universal_device_rental_postgres
     restart: always
+    ports:
+      - "127.0.0.1:5432:5432"
     environment:
       TZ: Asia/Seoul
       POSTGRES_DB: universal_device_rental
