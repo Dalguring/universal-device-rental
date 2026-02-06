@@ -1,13 +1,13 @@
 package com.rentify.rentify_api.user.service;
 
 import com.rentify.rentify_api.common.exception.AccountDeactivatedException;
+import com.rentify.rentify_api.common.exception.IdempotencyException;
 import com.rentify.rentify_api.common.exception.InvalidPasswordException;
 import com.rentify.rentify_api.common.exception.NotFoundException;
-import com.rentify.rentify_api.common.jwt.JwtTokenProvider;
-import com.rentify.rentify_api.common.exception.IdempotencyException;
 import com.rentify.rentify_api.common.idempotency.IdempotencyKey;
 import com.rentify.rentify_api.common.idempotency.IdempotencyKeyRepository;
 import com.rentify.rentify_api.common.idempotency.IdempotencyStatus;
+import com.rentify.rentify_api.common.jwt.JwtTokenProvider;
 import com.rentify.rentify_api.user.dto.CreateUserRequest;
 import com.rentify.rentify_api.user.dto.LoginRequest;
 import com.rentify.rentify_api.user.dto.UserResponse;
@@ -17,8 +17,9 @@ import com.rentify.rentify_api.user.entity.User;
 import com.rentify.rentify_api.user.entity.UserRole;
 import com.rentify.rentify_api.user.exception.DuplicateEmailException;
 import com.rentify.rentify_api.user.exception.UserNotFoundException;
-import com.rentify.rentify_api.user.repository.RefreshtokenRepository;
+import com.rentify.rentify_api.user.repository.RefreshTokenRepository;
 import com.rentify.rentify_api.user.repository.UserRepository;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -30,8 +31,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -41,7 +40,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final IdempotencyKeyRepository idempotencyKeyRepository;
     private final JwtTokenProvider jwtTokenProvider;
-    private final RefreshtokenRepository refreshtokenRepository;
+    private final RefreshTokenRepository refreshtokenRepository;
 
     @Transactional
     public Long signup(UUID idempotencyKey, CreateUserRequest request) {
@@ -113,7 +112,7 @@ public class UserService {
     @Transactional
     public LoginResponse oauthLogin(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new NotFoundException("회원 정보를 찾을 수 없습니다."));
+            .orElseThrow(() -> new NotFoundException("회원 정보를 찾을 수 없습니다."));
 
         return issueTokens(user);
     }
@@ -127,11 +126,11 @@ public class UserService {
         String refreshToken = jwtTokenProvider.createRefreshToken(user.getId());
 
         refreshtokenRepository.save(
-                new RefreshToken(
-                        user.getId(),
-                        refreshToken,
-                        LocalDateTime.now().plusDays(14)
-                )
+            RefreshToken.builder()
+                .userId(user.getId())
+                .token(refreshToken)
+                .expiredAt(LocalDateTime.now().plusDays(14))
+                .build()
         );
 
         return new LoginResponse(accessToken, refreshToken);
