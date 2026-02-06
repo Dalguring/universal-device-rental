@@ -3,6 +3,7 @@ package com.rentify.rentify_api.post.dto;
 import com.rentify.rentify_api.post.entity.PostStatus;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -40,6 +41,7 @@ public class PostFormRequest {
 
     private PostStatus status;
 
+    @NotEmpty
     private List<@Pattern(
         regexp = "^http://[^/]+/images/.*",
         message = "Invalid image URL format"
