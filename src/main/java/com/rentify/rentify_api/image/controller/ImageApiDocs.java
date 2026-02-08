@@ -28,7 +28,7 @@ public interface ImageApiDocs {
                     value = """
                         {
                             "success": true,
-                            "code": "SUCCESS",
+                            "code": "201",
                             "message": "이미지 등록완료",
                             "data": {
                                 "imageUrls": [
@@ -52,7 +52,7 @@ public interface ImageApiDocs {
                         value = """
                             {
                                 "success": false,
-                                "code": "FILE_EXCEPTION",
+                                "code": "400",
                                 "message": "파일은 최대 5개까지만 업로드 가능합니다.",
                                 "data": null
                             }
@@ -63,7 +63,7 @@ public interface ImageApiDocs {
                         value = """
                             {
                                 "success": false,
-                                "code": "FILE_EXCEPTION",
+                                "code": "400",
                                 "message": "최대 10MB 까지만 업로드 가능합니다.",
                                 "data": null
                             }
@@ -74,7 +74,7 @@ public interface ImageApiDocs {
                         value = """
                             {
                                 "success": false,
-                                "code": "FILE_EXCEPTION",
+                                "code": "400",
                                 "message": "지원하지 않는 파일 형식입니다.",
                                 "data": null
                             }

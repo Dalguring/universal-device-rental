@@ -31,7 +31,7 @@ public interface AuthApiDocs {
                 mediaType = "application/json",
                 schema = @Schema(implementation = com.rentify.rentify_api.common.response.ApiResponse.class),
                 examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
-                    value = "{\"success\": true, \"code\": \"SUCCESS\", \"message\": \"요청이 성공적으로 처리되었습니다.\", \"data\": {\"userId\": 1, \"email\": \"user@example.com\", \"name\": \"홍길동\"}}"
+                    value = "{\"success\": true, \"code\": \"200\", \"message\": \"요청이 성공적으로 처리되었습니다.\", \"data\": {\"userId\": 1, \"email\": \"user@example.com\", \"name\": \"홍길동\"}}"
                 )
             )
         ),
@@ -65,7 +65,7 @@ public interface AuthApiDocs {
             content = @Content(
                 mediaType = "application/json",
                 examples = @ExampleObject(
-                    value = "{\"success\": true, \"code\": \"SUCCESS\", \"message\": \"토큰 갱신 성공\", \"data\": null}"
+                    value = "{\"success\": true, \"code\": \"200\", \"message\": \"토큰 갱신 성공\", \"data\": null}"
                 )
             )
         ),
@@ -75,7 +75,7 @@ public interface AuthApiDocs {
             content = @Content(
                 mediaType = "application/json",
                 examples = @ExampleObject(
-                    value = "{\"success\": false, \"code\": \"INVALID_REQUEST\", \"message\": \"RefreshToken이 없습니다.\", \"data\": null}"
+                    value = "{\"success\": false, \"code\": \"400\", \"message\": \"RefreshToken이 없습니다.\", \"data\": null}"
                 )
             )
         ),
@@ -87,11 +87,11 @@ public interface AuthApiDocs {
                 examples = {
                     @ExampleObject(
                         name = "토큰 없음",
-                        value = "{\"success\": false, \"code\": \"NOT_FOUND\", \"message\": \"RefreshToken을 찾을 수 없습니다.\", \"data\": null}"
+                        value = "{\"success\": false, \"code\": \"404\", \"message\": \"RefreshToken을 찾을 수 없습니다.\", \"data\": null}"
                     ),
                     @ExampleObject(
                         name = "토큰 만료",
-                        value = "{\"success\": false, \"code\": \"NOT_FOUND\", \"message\": \"만료되거나 무효화된 RefreshToken입니다.\", \"data\": null}"
+                        value = "{\"success\": false, \"code\": \"404\", \"message\": \"만료되거나 무효화된 RefreshToken입니다.\", \"data\": null}"
                     )
                 }
             )
@@ -102,7 +102,7 @@ public interface AuthApiDocs {
             content = @Content(
                 mediaType = "application/json",
                 examples = @ExampleObject(
-                    value = "{\"success\": false, \"code\": \"ACCOUNT_DEACTIVATED\", \"message\": \"비활성화된 계정입니다.\", \"data\": null}"
+                    value = "{\"success\": false, \"code\": \"401\", \"message\": \"비활성화된 계정입니다.\", \"data\": null}"
                 )
             )
         )
