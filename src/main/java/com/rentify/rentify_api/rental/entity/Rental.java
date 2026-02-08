@@ -43,12 +43,10 @@ public class Rental {
     private LocalDateTime actualReturnedAt;
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "receive_method", nullable = false)
     private ReceiveMethod receiveMethod;
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "status", nullable = false)
     @Builder.Default
     private RentalStatus status = RentalStatus.REQUESTED;
