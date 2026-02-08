@@ -29,6 +29,8 @@ public class ImageController implements ImageApiDocs {
         List<String> imageUrls = imageService.uploadImages(files);
         return ResponseEntity
             .status(HttpStatus.CREATED)
-            .body(ApiResponse.success("이미지 등록완료", new ImageUploadResponse(imageUrls)));
+            .body(ApiResponse.success(
+                HttpStatus.CREATED, "이미지 등록완료", new ImageUploadResponse(imageUrls))
+            );
     }
 }

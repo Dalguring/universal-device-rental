@@ -4,7 +4,6 @@ import com.rentify.rentify_api.common.response.ApiResponse;
 import com.rentify.rentify_api.post.dto.PostDetailResponse;
 import com.rentify.rentify_api.post.dto.PostFormRequest;
 import com.rentify.rentify_api.post.dto.PostFormResponse;
-import com.rentify.rentify_api.post.entity.PostStatus;
 import com.rentify.rentify_api.post.service.PostService;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -14,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,14 +43,14 @@ public class PostController implements PostApiDocs {
     ) {
         Page<PostDetailResponse> postPage =
             postService.getPosts(categoryId, status, keyword, pageable);
-        return ResponseEntity.ok(ApiResponse.success(postPage));
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, postPage));
     }
 
     @Override
     @GetMapping("{id}")
     public ResponseEntity<ApiResponse<PostDetailResponse>> getPost(@PathVariable Long id) {
         PostDetailResponse response = postService.getPost(id);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, response));
     }
 
     @Override
@@ -63,7 +63,9 @@ public class PostController implements PostApiDocs {
         Long postId = postService.createPost(idempotencyKey, userId, request);
         URI location = URI.create("/api/posts/" + postId);
         return ResponseEntity.created(location)
-            .body(ApiResponse.success("게시글이 생성되었습니다.", new PostFormResponse(postId)));
+            .body(ApiResponse.success(
+                HttpStatus.CREATED, "게시글이 생성되었습니다.", new PostFormResponse(postId))
+            );
     }
 
     @Override
@@ -74,7 +76,8 @@ public class PostController implements PostApiDocs {
         @Valid @RequestBody PostFormRequest request
     ) {
         Long postId = postService.updatePost(id, userId, request);
-        return ResponseEntity.ok(ApiResponse.success("게시글 수정 성공", new PostFormResponse(postId)));
+        return ResponseEntity.ok(
+            ApiResponse.success(HttpStatus.OK, "게시글 수정 성공", new PostFormResponse(postId))
+        );
     }
-
 }

@@ -10,12 +10,13 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 @RestController
 @RequiredArgsConstructor
@@ -29,14 +30,14 @@ public class AuthController implements AuthApiDocs {
     @Override
     public ResponseEntity<ApiResponse<AuthMeResponse>> me(@AuthenticationPrincipal Long userId) {
         AuthMeResponse response = authService.getMe(userId);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, response));
     }
 
     @PostMapping("/refresh")
     @Override
     public ResponseEntity<ApiResponse<Void>> refreshToken(
-            HttpServletRequest request,
-            HttpServletResponse response
+        HttpServletRequest request,
+        HttpServletResponse response
     ) {
         // 쿠키에서 RefreshToken 가져오기
         Cookie[] cookies = request.getCookies();
@@ -65,7 +66,6 @@ public class AuthController implements AuthApiDocs {
         accessTokenCookie.setMaxAge(30 * 60);  // 30분
         response.addCookie(accessTokenCookie);
 
-        return ResponseEntity.ok(ApiResponse.success("토큰 갱신 성공"));
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, "토큰 갱신 성공"));
     }
-
 }
