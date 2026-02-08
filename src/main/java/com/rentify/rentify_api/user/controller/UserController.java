@@ -14,7 +14,9 @@ import java.net.URI;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,7 +24,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 @RestController
 @Slf4j
@@ -41,19 +42,23 @@ public class UserController implements UserApiDocs {
         Long userId = userService.signup(idempotencyKey, request);
         URI location = URI.create("/api/users/" + userId);
 
-        return ResponseEntity.created(location).body(ApiResponse.success("회원가입 성공"));
+        return ResponseEntity.created(location)
+            .body(ApiResponse.success(HttpStatus.CREATED, "회원가입 성공"));
     }
 
     @Hidden
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<UserResponse>> getUserById(@PathVariable Long id) {
         UserResponse response = userService.getUserInfo(id);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, response));
     }
 
     @PostMapping("/login")
     @Override
-    public ResponseEntity<ApiResponse<Void>> login(@RequestBody LoginRequest request, HttpServletResponse httpResponse) {
+    public ResponseEntity<ApiResponse<Void>> login(
+        @RequestBody LoginRequest request,
+        HttpServletResponse httpResponse
+    ) {
         LoginResponse response = userService.login(request);
 
         // AccessToken 쿠키 설정
@@ -72,12 +77,15 @@ public class UserController implements UserApiDocs {
         refreshTokenCookie.setMaxAge(14 * 24 * 60 * 60);  // 14일
         httpResponse.addCookie(refreshTokenCookie);
 
-        return ResponseEntity.ok(ApiResponse.success("로그인 성공"));
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, "로그인 성공"));
     }
 
     @PostMapping("/logout")
     @Override
-    public ResponseEntity<ApiResponse<Void>> logout(@AuthenticationPrincipal Long userId, HttpServletResponse response) {
+    public ResponseEntity<ApiResponse<Void>> logout(
+        @AuthenticationPrincipal Long userId,
+        HttpServletResponse response
+    ) {
         // RefreshToken DB에서 삭제
         userService.logout(userId);
 
@@ -95,7 +103,7 @@ public class UserController implements UserApiDocs {
         refreshTokenCookie.setMaxAge(0);  // 즉시 만료
         response.addCookie(refreshTokenCookie);
 
-        return ResponseEntity.ok(ApiResponse.success("로그아웃 성공"));
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, "로그아웃 성공"));
     }
 
 }

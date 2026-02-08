@@ -30,7 +30,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         );
 
         ApiResponse<Void> apiResponse = ApiResponse.error(
-            String.valueOf(statusCode.value()),
+            HttpStatus.valueOf(statusCode.value()),
             ex.getMessage()
         );
 
@@ -43,7 +43,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
         return ResponseEntity
             .status(HttpStatus.NOT_FOUND)
-            .body(ApiResponse.error("NOT_FOUND", ex.getMessage()));
+            .body(ApiResponse.error(HttpStatus.NOT_FOUND, ex.getMessage()));
     }
 
     @ExceptionHandler(DuplicateException.class)
@@ -54,7 +54,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
         return ResponseEntity
             .status(HttpStatus.CONFLICT)
-            .body(ApiResponse.error("DUPLICATE", ex.getMessage()));
+            .body(ApiResponse.error(HttpStatus.CONFLICT, ex.getMessage()));
     }
 
     @ExceptionHandler(InvalidValueException.class)
@@ -64,7 +64,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
             .body(ApiResponse.error(
-                "INVALID_VALUE", ex.getMessage())
+                HttpStatus.BAD_REQUEST, ex.getMessage())
             );
     }
 
@@ -76,7 +76,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity
             .status(HttpStatus.UNAUTHORIZED)
             .body(ApiResponse.error(
-                "INVALID_PASSWORD", ex.getMessage()
+                HttpStatus.UNAUTHORIZED, ex.getMessage()
             ));
     }
 
@@ -88,7 +88,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity
             .status(HttpStatus.UNAUTHORIZED)
             .body(ApiResponse.error(
-                "ACCOUNT_DEACTIVATED", ex.getMessage()
+                HttpStatus.UNAUTHORIZED, ex.getMessage()
             ));
     }
 
@@ -98,7 +98,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
         return ResponseEntity
             .status(HttpStatus.CONFLICT)
-            .body(ApiResponse.error("PROCESS_IN_PROGRESS", ex.getMessage()));
+            .body(ApiResponse.error(HttpStatus.CONFLICT, ex.getMessage()));
     }
 
     @ExceptionHandler(FileException.class)
@@ -107,7 +107,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
-            .body(ApiResponse.error("FILE_EXCEPTION", ex.getMessage()));
+            .body(ApiResponse.error(HttpStatus.BAD_REQUEST, ex.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)
@@ -120,6 +120,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(ApiResponse.error("INTERNAL_SERVER_ERROR", message));
+            .body(ApiResponse.error(HttpStatus.INTERNAL_SERVER_ERROR, message));
     }
 }

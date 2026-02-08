@@ -45,7 +45,7 @@ public interface PostApiDocs {
                     value = """
                         {
                           "success": true,
-                          "code": "SUCCESS",
+                          "code": "200",
                           "message": "요청이 성공적으로 처리되었습니다.",
                           "data": {
                             "content": [
@@ -111,7 +111,7 @@ public interface PostApiDocs {
                         value = """
                             {
                                 "success": false,
-                                "code": "INVALID_VALUE",
+                                "code": "400",
                                 "message": "유효하지 않은 게시글 상태입니다.",
                                 "data": null
                             }
@@ -122,7 +122,7 @@ public interface PostApiDocs {
                         value = """
                             {
                                 "success": false,
-                                "code": "INVALID_VALUE",
+                                "code": "400",
                                 "message": "정렬 기준 '[\\"string\\"]'은(는) 지원하지 않습니다. (허용 필드: [title, id, createAt, pricePerDay])",
                                 "data": null
                             }
@@ -140,7 +140,7 @@ public interface PostApiDocs {
                     value = """
                         {
                             "success": false,
-                            "code": "NOT_FOUND",
+                            "code": "404",
                             "message": "등록되지 않은 카테고리입니다.",
                             "data": null
                         }
@@ -180,7 +180,7 @@ public interface PostApiDocs {
                     value = """
                         {
                             "success": true,
-                            "code": "SUCCESS",
+                            "code": "200",
                             "message": "요청이 성공적으로 처리되었습니다.",
                             "data": {
                                 "categoryName": "갤럭시 울트라",
@@ -215,7 +215,7 @@ public interface PostApiDocs {
                     value = """
                         {
                             "success": false,
-                            "code": "NOT_FOUND",
+                            "code": "404",
                             "message": "게시글을 찾을 수 없습니다.",
                             "data": null
                         }
@@ -251,7 +251,7 @@ public interface PostApiDocs {
                     value = """
                         {
                             "success": true,
-                            "code": "SUCCESS",
+                            "code": "201",
                             "message": "게시글이 생성되었습니다.",
                             "data": {
                                 "postId": 12
@@ -272,7 +272,7 @@ public interface PostApiDocs {
                         value = """
                             {
                                 "success": false,
-                                "code": "INVALID_REQUEST",
+                                "code": "400",
                                 "message": "categoryId : Category ID is required",
                                 "data": null
                             }
@@ -283,7 +283,7 @@ public interface PostApiDocs {
                         value = """
                             {
                                 "success": false,
-                                "code": "INVALID_REQUEST",
+                                "code": "400",
                                 "message": "title : Title is required",
                                 "data": null
                             }
@@ -294,7 +294,7 @@ public interface PostApiDocs {
                         value = """
                             {
                                 "success": false,
-                                "code": "FILE_EXCEPTION",
+                                "code": "400",
                                 "message": "지원하지 않는 파일 형식입니다.",
                                 "data": null
                             }
@@ -315,7 +315,7 @@ public interface PostApiDocs {
                         value = """
                             {
                                 "success": false,
-                                "code": "NOT_FOUND",
+                                "code": "404",
                                 "message": "존재하지 않는 사용자입니다.",
                                 "data": null
                             }
@@ -327,7 +327,7 @@ public interface PostApiDocs {
                         value = """
                             {
                                 "success": false,
-                                "code": "NOT_FOUND",
+                                "code": "404",
                                 "message": "등록되지 않은 카테고리입니다.",
                                 "data": null
                             }
@@ -346,7 +346,7 @@ public interface PostApiDocs {
                     value = """
                         {
                             "success": false,
-                            "code": "PROCESS_IN_PROGRESS",
+                            "code": "409",
                             "message": "이전 게시글이 생성 중 입니다. 잠시 후 결과를 확인해주세요.",
                             "data": null
                         }
@@ -402,7 +402,7 @@ public interface PostApiDocs {
                     value = """
                         {
                             "success": true,
-                            "code": "SUCCESS",
+                            "code": "200",
                             "message": "게시글 수정 성공",
                             "data": {
                                 "postId": 1
@@ -423,7 +423,7 @@ public interface PostApiDocs {
                         value = """
                             {
                                 "success": false,
-                                "code": "INVALID_REQUEST",
+                                "code": "400",
                                 "message": "categoryId : Category ID is required",
                                 "data": null
                             }
@@ -434,7 +434,7 @@ public interface PostApiDocs {
                         value = """
                             {
                                 "success": false,
-                                "code": "INVALID_REQUEST",
+                                "code": "400",
                                 "message": "title : Title is required",
                                 "data": null
                             }
@@ -455,7 +455,7 @@ public interface PostApiDocs {
                         value = """
                             {
                                 "success": false,
-                                "code": "NOT_FOUND",
+                                "code": "404",
                                 "message": "게시글을 찾을 수 없습니다.",
                                 "data": null
                             }
@@ -467,7 +467,7 @@ public interface PostApiDocs {
                         value = """
                             {
                                 "success": false,
-                                "code": "NOT_FOUND",
+                                "code": "404",
                                 "message": "등록되지 않은 카테고리입니다.",
                                 "data": null
                             }
@@ -485,7 +485,7 @@ public interface PostApiDocs {
                     value = """
                         {
                             "success": false,
-                            "code": "ACCESS_DENIED",
+                            "code": "403",
                             "message": "수정 권한이 없습니다.",
                             "data": null
                         }

@@ -24,7 +24,7 @@ public interface CategoryApiDocs {
                     value = """
                         {
                             "success": true,
-                            "code": "SUCCESS",
+                            "code": "200",
                             "message": "요청이 성공적으로 처리되었습니다.",
                             "data": {
                                 "categories": [
@@ -52,7 +52,7 @@ public interface CategoryApiDocs {
                     value = """
                         {
                             "success": false,
-                            "code": "INTERNAL_SERVER_ERROR",
+                            "code": "500",
                             "message": "서버 내부 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
                             "data": null
                         }

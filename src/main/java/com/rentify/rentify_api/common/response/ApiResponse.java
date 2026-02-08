@@ -1,36 +1,28 @@
 package com.rentify.rentify_api.common.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import org.springframework.http.HttpStatus;
 
-@Getter
-@AllArgsConstructor
-public class ApiResponse<T> {
-
-    private final boolean success;
-    private final String code;
-    private final String message;
-    private final T data;
+public record ApiResponse<T>(boolean success, String code, String message, T data) {
 
     // success
-    public static <T> ApiResponse<T> success(T data) {
-        return new ApiResponse<>(true, "SUCCESS", "요청이 성공적으로 처리되었습니다.", data);
+    public static <T> ApiResponse<T> success(HttpStatus status, T data) {
+        return new ApiResponse<>(true, String.valueOf(status.value()), "요청이 성공적으로 처리되었습니다.", data);
     }
 
-    public static <T> ApiResponse<T> success(String message, T data) {
-        return new ApiResponse<>(true, "SUCCESS", message, data);
+    public static <T> ApiResponse<T> success(HttpStatus status, String message, T data) {
+        return new ApiResponse<>(true, String.valueOf(status.value()), message, data);
     }
 
-    public static ApiResponse<Void> success() {
-        return new ApiResponse<>(true, "SUCCESS", "요청이 성공적으로 처리되었습니다.", null);
+    public static ApiResponse<Void> success(HttpStatus status) {
+        return new ApiResponse<>(true, String.valueOf(status.value()), "요청이 성공적으로 처리되었습니다.", null);
     }
 
-    public static ApiResponse<Void> success(String message) {
-        return new ApiResponse<>(true, "SUCCESS", message, null);
+    public static ApiResponse<Void> success(HttpStatus status, String message) {
+        return new ApiResponse<>(true, String.valueOf(status.value()), message, null);
     }
 
     // error
-    public static ApiResponse<Void> error(String code, String message) {
-        return new ApiResponse<>(false, code, message, null);
+    public static ApiResponse<Void> error(HttpStatus status, String message) {
+        return new ApiResponse<>(false, String.valueOf(status.value()), message, null);
     }
 }

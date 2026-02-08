@@ -38,7 +38,7 @@ public interface UserApiDocs {
             content = @Content(
                 mediaType = "application/json",
                 examples = @ExampleObject(
-                    value = "{\"success\": true, \"code\": \"SUCCESS\", \"message\": \"회원가입 성공\", \"data\": null}"
+                    value = "{\"success\": true, \"code\": \"201\", \"message\": \"회원가입 성공\", \"data\": null}"
                 )
             )
         ),
@@ -50,15 +50,15 @@ public interface UserApiDocs {
                 examples = {
                     @ExampleObject(
                         name = "이메일 형식 검증 실패",
-                        value = "{\"success\": false, \"code\": \"INVALID_REQUEST\", \"message\": \"email : 이메일 형식이 올바르지 않습니다.\", \"data\": null}"
+                        value = "{\"success\": false, \"code\": \"400\", \"message\": \"email : 이메일 형식이 올바르지 않습니다.\", \"data\": null}"
                     ),
                     @ExampleObject(
                         name = "계좌번호 형식 검증 실패",
-                        value = "{\"success\": false, \"code\": \"INVALID_REQUEST\", \"message\": \"계좌번호는 숫자만 사용한 10 ~ 20자리여야 합니다.\", \"data\": null}"
+                        value = "{\"success\": false, \"code\": \"400\", \"message\": \"계좌번호는 숫자만 사용한 10 ~ 20자리여야 합니다.\", \"data\": null}"
                     ),
                     @ExampleObject(
                         name = "휴대폰 번호 형식 검증 실패",
-                        value = "{\"success\": false, \"code\": \"INVALID_REQUEST\", \"message\": \"휴대폰 번호는 숫자만 사용한 10~11자리여야 합니다.\", \"data\": null}"
+                        value = "{\"success\": false, \"code\": \"400\", \"message\": \"휴대폰 번호는 숫자만 사용한 10~11자리여야 합니다.\", \"data\": null}"
                     ),
                 }
             )
@@ -70,7 +70,7 @@ public interface UserApiDocs {
                 mediaType = "application/json",
                 examples = @ExampleObject(
                     summary = "중복된 요청(멱등성 처리)",
-                    value = "{\"success\": false, \"code\": \"PROCESS_IN_PROGRESS\", \"message\": \"이전 요청이 아직 처리 중입니다. 잠시 후 결과를 확인해주세요.\", \"data\": null}"
+                    value = "{\"success\": false, \"code\": \"409\", \"message\": \"이전 요청이 아직 처리 중입니다. 잠시 후 결과를 확인해주세요.\", \"data\": null}"
                 )
             )
         )
@@ -109,7 +109,7 @@ public interface UserApiDocs {
             content = @Content(
                 mediaType = "application/json",
                 examples = @ExampleObject(
-                    value = "{\"success\": true, \"code\": \"SUCCESS\", \"message\": \"로그인 성공\", \"data\": null}"
+                    value = "{\"success\": true, \"code\": \"200\", \"message\": \"로그인 성공\", \"data\": null}"
                 )
             )
         ),
@@ -121,11 +121,11 @@ public interface UserApiDocs {
                 examples = {
                     @ExampleObject(
                         name = "비밀번호 불일치",
-                        value = "{\"success\": false, \"code\": \"INVALID_PASSWORD\", \"message\": \"비밀번호가 일치하지 않습니다.\", \"data\": null}"
+                        value = "{\"success\": false, \"code\": \"401\", \"message\": \"비밀번호가 일치하지 않습니다.\", \"data\": null}"
                     ),
                     @ExampleObject(
                         name = "비활성화된 계정",
-                        value = "{\"success\": false, \"code\": \"ACCOUNT_DEACTIVATED\", \"message\": \"비활성화된 계정입니다.\", \"data\": null}"
+                        value = "{\"success\": false, \"code\": \"401\", \"message\": \"비활성화된 계정입니다.\", \"data\": null}"
                     )
                 }
             )
@@ -136,7 +136,7 @@ public interface UserApiDocs {
             content = @Content(
                 mediaType = "application/json",
                 examples = @ExampleObject(
-                    value = "{\"success\": false, \"code\": \"NOT_FOUND\", \"message\": \"존재하지 않는 사용자입니다.\", \"data\": null}"
+                    value = "{\"success\": false, \"code\": \"404\", \"message\": \"존재하지 않는 사용자입니다.\", \"data\": null}"
                 )
             )
         )
@@ -177,7 +177,7 @@ public interface UserApiDocs {
             content = @Content(
                 mediaType = "application/json",
                 examples = @ExampleObject(
-                    value = "{\"success\": true, \"code\": \"SUCCESS\", \"message\": \"로그아웃 성공\", \"data\": null}"
+                    value = "{\"success\": true, \"code\": \"200\", \"message\": \"로그아웃 성공\", \"data\": null}"
                 )
             )
         ),
@@ -187,11 +187,14 @@ public interface UserApiDocs {
             content = @Content(
                 mediaType = "application/json",
                 examples = @ExampleObject(
-                    value = "{\"success\": false, \"code\": \"UNAUTHORIZED\", \"message\": \"인증이 필요합니다.\", \"data\": null}"
+                    value = "{\"success\": false, \"code\": \"401\", \"message\": \"인증이 필요합니다.\", \"data\": null}"
                 )
             )
         )
     })
     @PostMapping("/logout")
-    ResponseEntity<com.rentify.rentify_api.common.response.ApiResponse<Void>> logout(@Parameter(hidden = true) @AuthenticationPrincipal Long userId, HttpServletResponse response);
+    ResponseEntity<com.rentify.rentify_api.common.response.ApiResponse<Void>> logout(
+        @Parameter(hidden = true) @AuthenticationPrincipal Long userId,
+        HttpServletResponse response
+    );
 }
