@@ -25,7 +25,7 @@ public class RentalController implements RentalApiDocs {
         @Valid @RequestBody RentalRequest request
     ) {
         RentalResponse response = rentalService.createRental(userId, request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(HttpStatus.CREATED, response));
     }
 
     @Override
@@ -35,7 +35,7 @@ public class RentalController implements RentalApiDocs {
         @PathVariable Long rentalId
     ) {
         RentalResponse response = rentalService.confirmRental(userId, rentalId);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, response));
     }
 
     @Override
@@ -45,6 +45,6 @@ public class RentalController implements RentalApiDocs {
         @PathVariable Long rentalId
     ) {
         RentalResponse response = rentalService.cancelRental(userId, rentalId);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, response));
     }
 }
