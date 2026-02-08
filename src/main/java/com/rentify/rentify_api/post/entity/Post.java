@@ -133,4 +133,8 @@ public class Post {
     public void updateThumbnail(String thumbnailUrl) {
         this.thumbnailUrl = thumbnailUrl;
     }
+
+    public void updateStatus(PostStatus status) {
+        this.status = status;
+    }
 }
