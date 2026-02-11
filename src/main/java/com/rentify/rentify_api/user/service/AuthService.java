@@ -61,7 +61,7 @@ public class AuthService {
         }
 
         if (!verification.getVerificationCode().equals(code)) {
-            throw new InvalidValueException("인증 번호가 일치하지 않습니다");
+            throw new InvalidValueException("인증 번호가 일치하지 않습니다.");
         }
 
         verification.verify();

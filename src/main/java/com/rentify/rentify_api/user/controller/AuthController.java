@@ -73,6 +73,7 @@ public class AuthController implements AuthApiDocs {
     }
 
     @PostMapping("/email-verfication/code")
+    @Override
     public ResponseEntity<ApiResponse<Void>> sendVerificationCode(
         @Valid @RequestBody SendVerificationCodeRequest request
     ) {
@@ -81,6 +82,7 @@ public class AuthController implements AuthApiDocs {
     }
 
     @PostMapping("/email-verfication")
+    @Override
     public ResponseEntity<ApiResponse<Void>> verifyEmail(
         @Valid @RequestBody VerifyEmailRequest request
     ) {
