@@ -8,6 +8,9 @@ import com.rentify.rentify_api.common.idempotency.IdempotencyKey;
 import com.rentify.rentify_api.common.idempotency.IdempotencyKeyRepository;
 import com.rentify.rentify_api.common.idempotency.IdempotencyStatus;
 import com.rentify.rentify_api.common.jwt.JwtTokenProvider;
+import com.rentify.rentify_api.post.dto.PostDetailResponse;
+import com.rentify.rentify_api.post.entity.Post;
+import com.rentify.rentify_api.post.repository.PostRepository;
 import com.rentify.rentify_api.user.dto.CreateUserRequest;
 import com.rentify.rentify_api.user.dto.LoginRequest;
 import com.rentify.rentify_api.user.dto.UserResponse;
@@ -27,6 +30,8 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +46,7 @@ public class UserService {
     private final IdempotencyKeyRepository idempotencyKeyRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final RefreshTokenRepository refreshtokenRepository;
+    private final PostRepository postRepository;
 
     @Transactional
     public Long signup(UUID idempotencyKey, CreateUserRequest request) {
@@ -186,5 +192,11 @@ public class UserService {
     public void logout(Long userId) {
         // DB에서 해당 유저의 모든 RefreshToken 삭제
         refreshtokenRepository.deleteByUserId(userId);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<PostDetailResponse> getMyPosts(Long userId, boolean includeHidden, Pageable pageable) {
+        Page<Post> posts = postRepository.findByUserIdWithHiddenOption(userId, includeHidden, pageable);
+        return posts.map(PostDetailResponse::from);
     }
 }

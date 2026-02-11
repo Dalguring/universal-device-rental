@@ -1,9 +1,11 @@
 package com.rentify.rentify_api.user.controller;
 
+import com.rentify.rentify_api.post.dto.PostDetailResponse;
 import com.rentify.rentify_api.user.dto.CreateUserRequest;
 import com.rentify.rentify_api.user.dto.LoginRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -16,11 +18,16 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.util.UUID;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "User API", description = "회원 가입, 로그인 등 사용자 관련 API")
 public interface UserApiDocs {
@@ -196,5 +203,110 @@ public interface UserApiDocs {
     ResponseEntity<com.rentify.rentify_api.common.response.ApiResponse<Void>> logout(
         @Parameter(hidden = true) @AuthenticationPrincipal Long userId,
         HttpServletResponse response
+    );
+
+    @Operation(
+        summary = "내 게시글 조회",
+        description = "로그인한 사용자가 자신이 등록한 모든 게시글을 페이징하여 조회합니다.<br/> " +
+            "기본적으로 HIDDEN 상태의 게시글은 제외되며, includeHidden=true로 설정 시 포함됩니다."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "조회 성공",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = Page.class),
+                examples = @ExampleObject(
+                    value = """
+                        {
+                          "success": true,
+                          "code": "200",
+                          "message": "OK",
+                          "data": {
+                            "content": [
+                              {
+                                "postId": 1,
+                                "userId": 1,
+                                "categoryName": "갤럭시 울트라",
+                                "userName": "서성민",
+                                "title": "갤럭시 S25엣지 대여",
+                                "description": "테스트 수정 입니다",
+                                "pricePerDay": 52000,
+                                "maxRentalDays": 20,
+                                "isParcel": true,
+                                "isMeetup": true,
+                                "status": "AVAILABLE",
+                                "imageUrls": ["http://unirental.duckdns.org/images/6d82b234-6708-4875-ba60-80af76cc9e69.jpg",
+                                              "http://unirental.duckdns.org/images/20689993-ef98-4919-b8e9-631448253749.jpg"],
+                                "createAt": "2026-01-28T20:55:58.522954",
+                                "updateAt": "2026-01-29T20:45:03.049727"
+                              }
+                            ],
+                            "pageable": {
+                              "pageNumber": 0,
+                              "pageSize": 20,
+                              "sort": {
+                                "sorted": true,
+                                "unsorted": false,
+                                "empty": false
+                              }
+                            },
+                            "totalElements": 15,
+                            "totalPages": 1,
+                            "last": true,
+                            "size": 20,
+                            "number": 0,
+                            "first": true,
+                            "numberOfElements": 15,
+                            "empty": false
+                          }
+                        }
+                        """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "인증 실패 (로그인 필요)",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = "{\"success\": false, \"code\": \"401\", \"message\": \"인증이 필요합니다.\", \"data\": null}"
+                )
+            )
+        )
+    })
+    @Parameters({
+        @Parameter(
+            name = "page",
+            description = "페이지 번호 (0부터 시작)",
+            in = ParameterIn.QUERY,
+            schema = @Schema(type = "integer", defaultValue = "0")
+        ),
+        @Parameter(
+            name = "size",
+            description = "한 페이지당 개수",
+            in = ParameterIn.QUERY,
+            schema = @Schema(type = "integer", defaultValue = "20")
+        ),
+        @Parameter(
+            name = "sort",
+            description = "정렬 기준 (필드명,방향). 예: createAt,desc",
+            in = ParameterIn.QUERY,
+            schema = @Schema(type = "array", implementation = String.class),
+            example = "createAt,desc"
+        )
+    })
+    @GetMapping("/myposts")
+    ResponseEntity<com.rentify.rentify_api.common.response.ApiResponse<Page<PostDetailResponse>>> getMyPosts(
+        @Parameter(hidden = true) @AuthenticationPrincipal Long userId,
+        @Parameter(
+            name = "includeHidden",
+            description = "HIDDEN 상태의 게시글 포함 여부 (기본값: false)",
+            example = "false"
+        )
+        @RequestParam(defaultValue = "false") boolean includeHidden,
+        @ParameterObject Pageable pageable
     );
 }
