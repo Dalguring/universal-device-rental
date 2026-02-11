@@ -1,6 +1,9 @@
 package com.rentify.rentify_api.user.controller;
 
 import com.rentify.rentify_api.user.dto.AuthMeResponse;
+import com.rentify.rentify_api.user.dto.CreateUserRequest;
+import com.rentify.rentify_api.user.dto.SendVerificationCodeRequest;
+import com.rentify.rentify_api.user.dto.VerifyEmailRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -11,10 +14,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @Tag(name = "Auth", description = "인증 API")
 public interface AuthApiDocs {
@@ -109,4 +114,117 @@ public interface AuthApiDocs {
     })
     @PostMapping("/refresh")
     ResponseEntity<com.rentify.rentify_api.common.response.ApiResponse<Void>> refreshToken(HttpServletRequest request, HttpServletResponse response);
+
+    @Operation(
+        summary = "이메일 인증 코드 요청",
+        description = "사용자의 이메일을 파라미터로 받아 해당 메일 주소로 인증 코드가 담긴 메일을 송신합니다.<br/>"
+            + "메일 발신은 비동기로 처리 하기에 수신까지 시간이 소요될 수 있으며 인증 만료 시간은 요청 시간으로부터 5분 뒤 입니다."
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200",
+            description = "이메일 발신 성공(비동기)",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
+                    value = "{\"success\": true, \"code\": \"200\", \"message\": \"인증 번호가 전송되었습니다.\", \"data\": null}"
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "409",
+            description = "이미 가입된 회원",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
+                    value = "{\"success\": false, \"code\": \"409\", \"message\": \"이미 가입된 계정입니다.\", \"data\": null}"
+                )
+            )
+        )
+    })
+    @PostMapping("/email-verfication/code")
+    ResponseEntity<com.rentify.rentify_api.common.response.ApiResponse<Void>> sendVerificationCode(
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "이메일 인증 코드 요청 데이터",
+            required = true,
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = SendVerificationCodeRequest.class)
+            )
+        )
+        @Valid @RequestBody SendVerificationCodeRequest request
+    );
+
+    @Operation(
+        summary = "이메일 인증 요청",
+        description = "이메일 인증 코드 요청을 한 이메일과 이메일로 전송된 코드로 이메일 인증을 진행합니다."
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200",
+            description = "이메일 인증 성공",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
+                    value = "{\"success\": true, \"code\": \"200\", \"message\": \"이메일 인증이 완료되었습니다.\", \"data\": null}"
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "인증 내역 요청 없음",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
+                    value = "{\"success\": false, \"code\": \"404\", \"message\": \"인증 요청 내역이 없습니다.\", \"data\": null}"
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "인증 오류",
+            content = @Content(
+                mediaType = "application/json",
+                examples = {
+                    @ExampleObject(
+                        name = "인증 시간 만료",
+                        value = """
+                            {
+                                "success": false,
+                                "code": "400",
+                                "message": "인증 시간이 만료되었습니다.",
+                                "data": null
+                            }
+                            """
+                    ),
+                    @ExampleObject(
+                        name = "인증 번호 불일치",
+                        value = """
+                            {
+                                "success": false,
+                                "code": "400",
+                                "message": "인증 번호가 일치하지 않습니다.",
+                                "data": null
+                            }
+                            """
+                    )
+                }
+            )
+        )
+    })
+    @PostMapping("/email-verfication")
+    ResponseEntity<com.rentify.rentify_api.common.response.ApiResponse<Void>> verifyEmail(
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "이메일 인증 요청 데이터",
+            required = true,
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = VerifyEmailRequest.class),
+                examples = @ExampleObject(
+                    value = "{\"email\": \"user@example.com\", \"code\": \"132413\"}"
+                )
+            )
+        )
+        @Valid @RequestBody VerifyEmailRequest request
+    );
 }
