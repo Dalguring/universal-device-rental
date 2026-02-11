@@ -1,6 +1,7 @@
 package com.rentify.rentify_api.user.controller;
 
 import com.rentify.rentify_api.common.response.ApiResponse;
+import com.rentify.rentify_api.post.dto.PostDetailResponse;
 import com.rentify.rentify_api.user.dto.CreateUserRequest;
 import com.rentify.rentify_api.user.dto.LoginRequest;
 import com.rentify.rentify_api.user.dto.UserResponse;
@@ -14,6 +15,11 @@ import java.net.URI;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -23,6 +29,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -104,6 +111,17 @@ public class UserController implements UserApiDocs {
         response.addCookie(refreshTokenCookie);
 
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, "로그아웃 성공"));
+    }
+
+    @Override
+    @GetMapping("/myposts")
+    public ResponseEntity<ApiResponse<Page<PostDetailResponse>>> getMyPosts(
+        @AuthenticationPrincipal Long userId,
+        @RequestParam(defaultValue = "false") boolean includeHidden,
+        @ParameterObject @PageableDefault(sort = "createAt", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        Page<PostDetailResponse> posts = userService.getMyPosts(userId, includeHidden, pageable);
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, posts));
     }
 
 }

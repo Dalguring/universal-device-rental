@@ -45,13 +45,26 @@ public class SecurityConfig {
             .httpBasic(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(SWAGGER_WHITELIST).permitAll()
+                // User API
                 .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/users/login").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/users/logout").authenticated()
-                .requestMatchers(HttpMethod.GET, "/api/posts/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/users/myposts").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll()
+                // Auth API
+                .requestMatchers(HttpMethod.GET, "/auth/me").authenticated()
+                .requestMatchers(HttpMethod.POST, "/auth/refresh").permitAll()
                 .requestMatchers(HttpMethod.POST, "/auth/email-verfication/**").permitAll()
+                // Post API
+                .requestMatchers(HttpMethod.GET, "/api/posts/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/posts").authenticated()
+                .requestMatchers(HttpMethod.PUT, "/api/posts/**").authenticated()
+                // Rental API
+                .requestMatchers("/api/rentals/**").authenticated()
+                // Category API
+                .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
+                // Image API
+                .requestMatchers(HttpMethod.POST, "/api/images/**").authenticated()
                 .requestMatchers("/images/**").permitAll()
                 .anyRequest().authenticated()
             )
