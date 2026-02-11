@@ -1,20 +1,23 @@
 package com.rentify.rentify_api.user.controller;
 
-
 import com.rentify.rentify_api.common.exception.InvalidValueException;
 import com.rentify.rentify_api.common.response.ApiResponse;
 import com.rentify.rentify_api.user.dto.AuthMeResponse;
+import com.rentify.rentify_api.user.dto.SendVerificationCodeRequest;
+import com.rentify.rentify_api.user.dto.VerifyEmailRequest;
 import com.rentify.rentify_api.user.service.AuthService;
 import com.rentify.rentify_api.user.service.UserService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -67,5 +70,21 @@ public class AuthController implements AuthApiDocs {
         response.addCookie(accessTokenCookie);
 
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, "토큰 갱신 성공"));
+    }
+
+    @PostMapping("/email-verfication/code")
+    public ResponseEntity<ApiResponse<Void>> sendVerificationCode(
+        @Valid @RequestBody SendVerificationCodeRequest request
+    ) {
+        authService.sendVerificationCode(request.getEmail());
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, "인증 번호가 전송되었습니다."));
+    }
+
+    @PostMapping("/email-verfication")
+    public ResponseEntity<ApiResponse<Void>> verifyEmail(
+        @Valid @RequestBody VerifyEmailRequest request
+    ) {
+        authService.verifyEmail(request.getEmail(), request.getCode());
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, "이메일 인증이 완료되었습니다."));
     }
 }
