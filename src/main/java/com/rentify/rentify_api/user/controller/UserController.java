@@ -114,7 +114,7 @@ public class UserController implements UserApiDocs {
     }
 
     @Override
-    @GetMapping("/myposts")
+    @GetMapping("/me/posts")
     public ResponseEntity<ApiResponse<Page<PostDetailResponse>>> getMyPosts(
         @AuthenticationPrincipal Long userId,
         @RequestParam(defaultValue = "false") boolean includeHidden,

@@ -298,7 +298,7 @@ public interface UserApiDocs {
             example = "createAt,desc"
         )
     })
-    @GetMapping("/myposts")
+    @GetMapping("/me/posts")
     ResponseEntity<com.rentify.rentify_api.common.response.ApiResponse<Page<PostDetailResponse>>> getMyPosts(
         @Parameter(hidden = true) @AuthenticationPrincipal Long userId,
         @Parameter(
