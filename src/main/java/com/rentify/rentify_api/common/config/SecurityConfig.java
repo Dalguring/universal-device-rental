@@ -54,6 +54,7 @@ public class SecurityConfig {
                 // Auth API
                 .requestMatchers(HttpMethod.GET, "/auth/me").authenticated()
                 .requestMatchers(HttpMethod.POST, "/auth/refresh").permitAll()
+                .requestMatchers(HttpMethod.POST, "/auth/email-verfication/**").permitAll()
                 // Post API
                 .requestMatchers(HttpMethod.GET, "/api/posts/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/posts").authenticated()
@@ -64,6 +65,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
                 // Image API
                 .requestMatchers(HttpMethod.POST, "/api/images/**").authenticated()
+                .requestMatchers("/images/**").permitAll()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(
