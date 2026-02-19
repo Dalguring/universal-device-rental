@@ -47,3 +47,6 @@ out/
 
 ### Run File ###
 /start-tunnel.*
+
+### Log File ###
+/logs

@@ -50,14 +50,14 @@ jobs:
           tags: | 
             ${{ secrets.DOCKERHUB_USERNAME }}/universal-device-rental:latest
 
-      - name: Copy docker-compose.yml to GCP
+      - name: Copy files to GCP
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: appleboy/scp-action@v1
         with:
           host: ${{ secrets.GCP_HOST }}
           username: ${{ secrets.GCP_USERNAME }}
           key: ${{ secrets.GCP_SSH_KEY }}
-          source: "docker-compose.yml"
+          source: "docker-compose.yml,monitoring/**"
           target: "/home/${{ secrets.GCP_USERNAME }}/ecommerce-project/infra"
 
       - name: Deploy to GCP
