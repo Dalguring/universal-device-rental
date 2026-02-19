@@ -29,6 +29,8 @@ logging:
     root: INFO
     com.rentify.rentify_api: INFO
     org.hibernate.SQL: ERROR
+  file:
+    name: /app/logs/application.log
 
 file:
   upload:

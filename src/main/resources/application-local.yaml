@@ -29,6 +29,8 @@ logging:
     root: INFO
     com.rentify.rentify_api: DEBUG
     org.hibernate.SQL: DEBUG
+  file:
+    name: logs/application-local.log
 
 file:
   upload:

@@ -32,6 +32,7 @@ services:
       - "80:8080"
     volumes:
       - upload_data:/app/uploads
+      - app_logs:/app/logs
     environment:
       TZ: Asia/Seoul
       SPRING_PROFILES_ACTIVE: dev
@@ -50,6 +51,8 @@ services:
       MAIL_USERNAME: ${MAIL_USERNAME}
       MAIL_PASSWORD: ${MAIL_PASSWORD}
 
+      LOGGING_FILE_NAME: /app/logs/application.log
+
       JAVA_OPTS: >-
         -Duser.timezone=Asia/Seoul
         -Xms512m
@@ -57,6 +60,45 @@ services:
         -XX:+UseG1GC
         -XX:MaxGCPauseMillis=200
 
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    volumes:
+      - ./monitoring/loki-config.yaml:/etc/loki/local-config.yaml
+    command: -config.file=/etc/loki/local-config.yaml
+
+  promtail:
+    image: grafana/promtail:latest
+    container_name: promtail
+    volumes:
+      - ./monitoring/promtail-config.yaml:/etc/promtail/config.yml
+      - app_logs:/app/logs:ro
+    command: -config.file=/etc/promtail/config.yml
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus
+      - loki
+    volumes:
+      - grafana_data:/var/lib/grafana
+
 volumes:
   postgres_data:
   upload_data:
+  app_logs:
+  grafana_data:
