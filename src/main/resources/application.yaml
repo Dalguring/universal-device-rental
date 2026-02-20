@@ -2,6 +2,11 @@ spring:
   application:
     name: rentify-api
 
+  data:
+    web:
+      pageable:
+        serialization-mode: via_dto
+
   profiles:
     active: local
 
