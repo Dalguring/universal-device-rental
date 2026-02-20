@@ -37,10 +37,10 @@ public class User {
     @Column(name = "email", nullable = false, length = 100, unique = true)
     private String email;
 
-    @Column(name = "password", nullable = false, length = 255)
+    @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "address", length = 255)
+    @Column(name = "address")
     private String address;
 
     @Column(name = "bank", length = 20)
@@ -88,5 +88,9 @@ public class User {
             throw new IllegalStateException("포인트가 부족합니다.");
         }
         this.point -= amount;
+    }
+
+    public void updatePassword(String hashedPassword) {
+        this.password = hashedPassword;
     }
 }

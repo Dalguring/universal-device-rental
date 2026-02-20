@@ -4,6 +4,7 @@ import com.rentify.rentify_api.common.response.ApiResponse;
 import com.rentify.rentify_api.post.dto.PostDetailResponse;
 import com.rentify.rentify_api.user.dto.CreateUserRequest;
 import com.rentify.rentify_api.user.dto.LoginRequest;
+import com.rentify.rentify_api.user.dto.PasswordUpdateRequest;
 import com.rentify.rentify_api.user.dto.UserResponse;
 import com.rentify.rentify_api.user.entity.LoginResponse;
 import com.rentify.rentify_api.user.service.UserService;
@@ -24,6 +25,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -124,4 +126,13 @@ public class UserController implements UserApiDocs {
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, posts));
     }
 
+    @Override
+    @PatchMapping("/me/password")
+    public ResponseEntity<ApiResponse<Void>> changePassword(
+        @AuthenticationPrincipal Long userId,
+        @Valid @RequestBody PasswordUpdateRequest request
+    ) {
+        userService.changePassword(userId, request);
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, "패스워드 변경 성공"));
+    }
 }
