@@ -50,50 +50,31 @@ public interface PostApiDocs {
                           "data": {
                             "content": [
                               {
-                                "categoryName": "갤럭시 울트라",
-                                "createAt": "2026-01-28T20:55:58.522954",
-                                "description": "테스트 수정 입니다",
+                                "categoryName": "DSLR",
+                                "createAt": "2026-02-01T15:49:40.686305",
+                                "description": "DSLR 800D 대여합니다.",
                                 "imageUrls": [
-                                  "http://unirental.duckdns.org/images/6d82b234-6708-4875-ba60-80af76cc9e69.jpg",
-                                  "http://unirental.duckdns.org/images/20689993-ef98-4919-b8e9-631448253749.jpg"
+                                  "http://unirental.duckdns.org/images/dabdd601-72de-41b3-974d-f9e84f09a3dd.jpg",
+                                  "http://unirental.duckdns.org/images/519a66a4-9927-4434-80ed-8e656fa4ed0a.jpg"
                                 ],
                                 "isMeetup": true,
-                                "isParcel": true,
-                                "maxRentalDays": 20,
-                                "postId": 1,
-                                "pricePerDay": 52000,
-                                "status": "AVAILABLE",
-                                "title": "갤럭시 S25엣지 대여",
-                                "updateAt": "2026-01-29T20:45:03.049727",
-                                "userId": 1,
-                                "userName": "서성민"
+                                "isParcel": false,
+                                "maxRentalDays": 10,
+                                "postId": 3,
+                                "pricePerDay": 8000,
+                                "status": "RESERVED",
+                                "title": "DSLR 800D 대여",
+                                "updateAt": "2026-02-01T15:51:45.984886",
+                                "userId": 2,
+                                "userName": "서성민굴"
                               }
                             ],
-                            "empty": false,
-                            "first": true,
-                            "last": true,
-                            "number": 0,
-                            "numberOfElements": 1,
-                            "pageable": {
-                              "offset": 0,
-                              "pageNumber": 0,
-                              "pageSize": 5,
-                              "paged": true,
-                              "sort": {
-                                "empty": false,
-                                "sorted": true,
-                                "unsorted": false
-                              },
-                              "unpaged": false
-                            },
-                            "size": 5,
-                            "sort": {
-                              "empty": false,
-                              "sorted": true,
-                              "unsorted": false
-                            },
-                            "totalElements": 1,
-                            "totalPages": 1
+                            "page": {
+                              "size": 10,
+                              "number": 0,
+                              "totalElements": 1,
+                              "totalPages": 1
+                            }
                           }
                         }
                         """
