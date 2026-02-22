@@ -21,13 +21,12 @@ public class CategoryService {
     public List<CategoryInfo> getCategory() {
         List<Category> categories = categoryRepository.findAll();
 
+
         return categories.stream()
-            .map(category -> {
-                CategoryInfo response = new CategoryInfo();
-                response.setId(category.getId());
-                response.setName(category.getName());
-                return response;
-            })
+            .map(category -> CategoryInfo.builder()
+                .id(category.getId())
+                .name(category.getName())
+                .build())
             .collect(Collectors.toList());
     }
 }
