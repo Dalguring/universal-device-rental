@@ -66,32 +66,30 @@ class PostServiceTest {
 
     private UUID idempotencyKey;
     private Long userId;
-    private PostFormRequest request;
 
     @BeforeEach
     void setUp() {
         idempotencyKey = UUID.randomUUID();
         userId = 1L;
-        request = new PostFormRequest();
     }
 
     @Test
     @DisplayName("게시글 생성 성공")
     void create_post_success() {
         // given
-        request.setCategoryId(1L);
-        request.setTitle("테스트 제목");
-        request.setDescription("테스트 내용");
-        request.setPricePerDay(1000);
-        request.setMaxRentalDays(10);
-        request.setIsParcel(true);
-        request.setIsMeetup(true);
-        request.setImageUrls(
-            List.of(
+        PostFormRequest request = PostFormRequest.builder()
+            .categoryId(1L)
+            .title("테스트 제목")
+            .description("테스트 내용")
+            .pricePerDay(1000)
+            .maxRentalDays(10)
+            .isParcel(true)
+            .isMeetup(true)
+            .imageUrls(List.of(
                 "http://test.com:8080/images/test1.png",
                 "http//test.com:8080/images/test2.jpg"
-            )
-        );
+            ))
+            .build();
 
         User user = User.builder()
             .id(userId)
@@ -138,6 +136,8 @@ class PostServiceTest {
             .responseBody(responseBody)
             .build();
 
+        PostFormRequest request = PostFormRequest.builder().build();
+
         given(idempotencyKeyRepository.findById(idempotencyKey)).willReturn(Optional.of(existKey));
 
         // when
@@ -162,6 +162,8 @@ class PostServiceTest {
             .status(IdempotencyStatus.PENDING)
             .build();
 
+        PostFormRequest request = PostFormRequest.builder().build();
+
         given(idempotencyKeyRepository.findById(idempotencyKey)).willReturn(
             Optional.of(pendingKey));
 
@@ -179,6 +181,7 @@ class PostServiceTest {
     void create_post_user_notfound() {
         // given
         Long notFoundUserId = Long.MAX_VALUE;
+        PostFormRequest request = PostFormRequest.builder().build();
 
         given(idempotencyKeyRepository.findById(idempotencyKey)).willReturn(Optional.empty());
         given(idempotencyKeyRepository.saveAndFlush(any())).willAnswer(
@@ -200,6 +203,8 @@ class PostServiceTest {
     @DisplayName("존재하지 않는 카테고리 오류")
     void create_post_category_notfound() {
         // given
+        PostFormRequest request = PostFormRequest.builder()
+                .build();
         given(idempotencyKeyRepository.findById(idempotencyKey)).willReturn(Optional.empty());
         given(idempotencyKeyRepository.saveAndFlush(any())).willAnswer(
             invocation -> invocation.getArgument(0));
@@ -306,18 +311,22 @@ class PostServiceTest {
             .images(new ArrayList<>())
             .build();
 
+        PostFormRequest request = PostFormRequest.builder()
+            .title("수정 테스트 제목")
+            .description("수정 테스트 내용")
+            .pricePerDay(5000)
+            .maxRentalDays(90)
+            .isParcel(true)
+            .isMeetup(false)
+            .imageUrls(List.of(
+                "http://new-image.com/new.jpg"
+            ))
+            .build();
+
         Category mockCategory = Category.builder()
             .id(request.getCategoryId())
             .name("테스트 카테고리")
             .build();
-
-        request.setTitle("수정 테스트 제목");
-        request.setDescription("수정 테스트 내용");
-        request.setPricePerDay(5000);
-        request.setMaxRentalDays(90);
-        request.setIsParcel(true);
-        request.setIsMeetup(false);
-        request.setImageUrls(List.of("http://new-image.com/new.jpg"));
 
         given(postRepository.findById(postId)).willReturn(Optional.of(mockPost));
         given(categoryRepository.findById(request.getCategoryId()))
@@ -343,6 +352,7 @@ class PostServiceTest {
     void not_found_post() {
         // given
         Long invalidPostId = 10L;
+        PostFormRequest request = PostFormRequest.builder().build();
 
         given(postRepository.findById(invalidPostId)).willReturn(Optional.empty());
 
@@ -365,6 +375,8 @@ class PostServiceTest {
             .id(postId)
             .user(mockUser)
             .build();
+
+        PostFormRequest request = PostFormRequest.builder().build();
 
         given(postRepository.findById(postId)).willReturn(Optional.of(mockPost));
 
@@ -398,7 +410,7 @@ class PostServiceTest {
 
         // then
         assertThat(result.getTotalElements()).isEqualTo(1);
-        assertThat(result.getContent().get(0).getTitle()).isEqualTo("검색된 게시글");
+        assertThat(result.getContent().getFirst().getTitle()).isEqualTo("검색된 게시글");
     }
 
     @Test

@@ -51,11 +51,11 @@ class UserIdempotencyTest {
         ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
         CountDownLatch latch = new CountDownLatch(threadCount);
         UUID idempotencyKey = UUID.randomUUID();
-        CreateUserRequest request = new CreateUserRequest();
-
-        request.setEmail("test-" + UUID.randomUUID() + "@test.com");
-        request.setName("테스트유저");
-        request.setPassword("password1234");
+        CreateUserRequest request = CreateUserRequest.builder()
+            .email("test-" + UUID.randomUUID() + "@test.com")
+            .name("테스트유저")
+            .password("password1234")
+            .build();
 
         AtomicInteger successCount = new AtomicInteger();
         AtomicInteger idempotencyFailCount = new AtomicInteger();

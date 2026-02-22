@@ -2,16 +2,17 @@ package com.rentify.rentify_api.rental.dto;
 
 import com.rentify.rentify_api.rental.entity.ReceiveMethod;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import java.time.LocalDate;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
-
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder
 public class RentalRequest {
 
     @NotNull(message = "게시글 ID는 필수입니다.")
