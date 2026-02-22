@@ -2,6 +2,7 @@ package com.rentify.rentify_api.user.controller;
 
 import com.rentify.rentify_api.common.response.ApiResponse;
 import com.rentify.rentify_api.post.dto.PostDetailResponse;
+import com.rentify.rentify_api.rental.dto.RentalResponse;
 import com.rentify.rentify_api.user.dto.CreateUserRequest;
 import com.rentify.rentify_api.user.dto.LoginRequest;
 import com.rentify.rentify_api.user.dto.UserResponse;
@@ -122,6 +123,17 @@ public class UserController implements UserApiDocs {
     ) {
         Page<PostDetailResponse> posts = userService.getMyPosts(userId, includeHidden, pageable);
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, posts));
+    }
+
+    @Override
+    @GetMapping("/me/rentals")
+    public ResponseEntity<ApiResponse<Page<RentalResponse>>> getMyRentals(
+        @AuthenticationPrincipal Long userId,
+        @RequestParam(required = false) String role,
+        @ParameterObject @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        Page<RentalResponse> rentals = userService.getMyRentals(userId, role, pageable);
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, rentals));
     }
 
 }

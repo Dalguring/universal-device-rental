@@ -11,6 +11,8 @@ import com.rentify.rentify_api.common.jwt.JwtTokenProvider;
 import com.rentify.rentify_api.post.dto.PostDetailResponse;
 import com.rentify.rentify_api.post.entity.Post;
 import com.rentify.rentify_api.post.repository.PostRepository;
+import com.rentify.rentify_api.rental.dto.RentalResponse;
+import com.rentify.rentify_api.rental.service.RentalService;
 import com.rentify.rentify_api.user.dto.CreateUserRequest;
 import com.rentify.rentify_api.user.dto.LoginRequest;
 import com.rentify.rentify_api.user.dto.UserResponse;
@@ -47,6 +49,7 @@ public class UserService {
     private final JwtTokenProvider jwtTokenProvider;
     private final RefreshTokenRepository refreshtokenRepository;
     private final PostRepository postRepository;
+    private final RentalService rentalService;
 
     @Transactional
     public Long signup(UUID idempotencyKey, CreateUserRequest request) {
@@ -198,5 +201,19 @@ public class UserService {
     public Page<PostDetailResponse> getMyPosts(Long userId, boolean includeHidden, Pageable pageable) {
         Page<Post> posts = postRepository.findByUserIdWithHiddenOption(userId, includeHidden, pageable);
         return posts.map(PostDetailResponse::from);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<RentalResponse> getMyRentals(Long userId, String role, Pageable pageable) {
+        if (role == null) {
+            // role이 없으면 전체 대여 목록
+            return rentalService.getMyAllRentals(userId, pageable);
+        }
+
+        return switch (role.toLowerCase()) {
+            case "borrower" -> rentalService.getMyBorrowedRentals(userId, pageable);
+            case "lender" -> rentalService.getMyLendedRentals(userId, pageable);
+            default -> throw new IllegalArgumentException("Invalid role parameter. Use 'borrower' or 'lender'");
+        };
     }
 }
