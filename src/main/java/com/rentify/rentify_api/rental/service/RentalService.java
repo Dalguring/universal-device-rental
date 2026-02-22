@@ -16,6 +16,8 @@ import com.rentify.rentify_api.user.entity.User;
 import com.rentify.rentify_api.user.exception.UserNotFoundException;
 import com.rentify.rentify_api.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +43,11 @@ public class RentalService {
         // 게시글 조회
         Post post = postRepository.findById(request.getPostId())
             .orElseThrow(() -> new NotFoundException("게시글을 찾을 수 없습니다."));
+
+        // 본인의 게시글 여부 확인
+        if (post.getUser().getId().equals(userId)) {
+            throw new RentalNotAvailableException("본인의 게시글은 대여할 수 없습니다.");
+        }
 
         // 유효성 검증
         validateRentalRequest(request, post);
@@ -186,5 +193,26 @@ public class RentalService {
         }
 
         return convertToResponse(rental);
+    }
+
+    // 내가 빌리는 대여 목록
+    @Transactional(readOnly = true)
+    public Page<RentalResponse> getMyBorrowedRentals(Long userId, Pageable pageable) {
+        Page<RentalResponse> rentals = rentalRepository.findByUserId(userId, pageable);
+        return rentals;
+    }
+
+    // 내가 빌려준 대여 목록
+    @Transactional(readOnly = true)
+    public Page<RentalResponse> getMyLendedRentals(Long userId, Pageable pageable) {
+        Page<RentalResponse> rentals = rentalRepository.findByPostOwnerId(userId, pageable);
+        return rentals;
+    }
+
+    // 나의 모든 대여 목록
+    @Transactional(readOnly = true)
+    public Page<RentalResponse> getMyAllRentals(Long userId, Pageable pageable) {
+        Page<RentalResponse> rentals = rentalRepository.findByUserIdOrPostOwnerId(userId, pageable);
+        return rentals;
     }
 }
