@@ -3,6 +3,7 @@ package com.rentify.rentify_api.user.service;
 import com.rentify.rentify_api.common.exception.AccountDeactivatedException;
 import com.rentify.rentify_api.common.exception.IdempotencyException;
 import com.rentify.rentify_api.common.exception.InvalidPasswordException;
+import com.rentify.rentify_api.common.exception.InvalidValueException;
 import com.rentify.rentify_api.common.exception.NotFoundException;
 import com.rentify.rentify_api.common.idempotency.IdempotencyKey;
 import com.rentify.rentify_api.common.idempotency.IdempotencyKeyRepository;
@@ -15,6 +16,7 @@ import com.rentify.rentify_api.rental.dto.RentalResponse;
 import com.rentify.rentify_api.rental.service.RentalService;
 import com.rentify.rentify_api.user.dto.CreateUserRequest;
 import com.rentify.rentify_api.user.dto.LoginRequest;
+import com.rentify.rentify_api.user.dto.PasswordUpdateRequest;
 import com.rentify.rentify_api.user.dto.UserResponse;
 import com.rentify.rentify_api.user.entity.LoginResponse;
 import com.rentify.rentify_api.user.entity.RefreshToken;
@@ -215,5 +217,21 @@ public class UserService {
             case "lender" -> rentalService.getMyLendedRentals(userId, pageable);
             default -> throw new IllegalArgumentException("Invalid role parameter. Use 'borrower' or 'lender'");
         };
+    }
+
+    @Transactional
+    public void changePassword(Long userId, PasswordUpdateRequest request) {
+        User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
+            throw new InvalidPasswordException("패스워드가 일치하지 않습니다.");
+        }
+
+        if (passwordEncoder.matches(request.newPassword(), user.getPassword())) {
+            throw new InvalidValueException("기존과 동일한 비밀번호로 변경할 수 없습니다.");
+        }
+
+        String hashedPassword = passwordEncoder.encode(request.newPassword());
+        user.updatePassword(hashedPassword);
     }
 }

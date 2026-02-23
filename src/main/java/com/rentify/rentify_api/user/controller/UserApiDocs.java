@@ -4,6 +4,7 @@ import com.rentify.rentify_api.post.dto.PostDetailResponse;
 import com.rentify.rentify_api.rental.dto.RentalResponse;
 import com.rentify.rentify_api.user.dto.CreateUserRequest;
 import com.rentify.rentify_api.user.dto.LoginRequest;
+import com.rentify.rentify_api.user.dto.PasswordUpdateRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -22,11 +23,11 @@ import java.util.UUID;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -409,10 +410,64 @@ public interface UserApiDocs {
             @Parameter(
                     name = "role",
                     description = "조회 역할 필터 (예: LENDER(빌려준 내역), BORROWER(빌린 내역))",
-                    example = "BORROWER",
-                    required = false
+                    example = "BORROWER"
             )
             @RequestParam(required = false) String role,
             @ParameterObject Pageable pageable
+    );
+
+    @Operation(summary = "패스워드 변경", description = "사용자의 패스워드를 변경합니다.")
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "패스워드 변경 성공",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = "{\"success\": true, \"code\": \"200\", \"message\": \"패스워드 변경 성공\", \"data\": null}"
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "동일한 패스워드로 변경 요청",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = "{\"success\": false, \"code\": \"401\", \"message\": \"기존과 동일한 비밀번호로 변경할 수 없습니다.\", \"data\": null}"
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "패스워드 인증 실패",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = "{\"success\": false, \"code\": \"401\", \"message\": \"패스워드가 일치하지 않습니다.\", \"data\": null}"
+                )
+            )
+        )
+    })
+    @PatchMapping("/me/password")
+    ResponseEntity<com.rentify.rentify_api.common.response.ApiResponse<Void>> changePassword(
+        @AuthenticationPrincipal Long userId,
+        @RequestBody(
+            description = "패스워드 변경 요청 데이터",
+            required = true,
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = PasswordUpdateRequest.class),
+                examples = @ExampleObject(
+                    value = """
+                        {
+                            "currentPassword": "old_pass",
+                            "newPassword": "new_pass"
+                        }
+                        """
+                )
+            )
+        )
+        @Valid @org.springframework.web.bind.annotation.RequestBody PasswordUpdateRequest request
     );
 }

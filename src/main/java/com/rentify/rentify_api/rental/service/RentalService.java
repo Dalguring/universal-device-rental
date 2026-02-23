@@ -15,15 +15,14 @@ import com.rentify.rentify_api.rental.repository.RentalRepository;
 import com.rentify.rentify_api.user.entity.User;
 import com.rentify.rentify_api.user.exception.UserNotFoundException;
 import com.rentify.rentify_api.user.repository.UserRepository;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -198,21 +197,18 @@ public class RentalService {
     // 내가 빌리는 대여 목록
     @Transactional(readOnly = true)
     public Page<RentalResponse> getMyBorrowedRentals(Long userId, Pageable pageable) {
-        Page<RentalResponse> rentals = rentalRepository.findByUserId(userId, pageable);
-        return rentals;
+        return rentalRepository.findByUserId(userId, pageable);
     }
 
     // 내가 빌려준 대여 목록
     @Transactional(readOnly = true)
     public Page<RentalResponse> getMyLendedRentals(Long userId, Pageable pageable) {
-        Page<RentalResponse> rentals = rentalRepository.findByPostOwnerId(userId, pageable);
-        return rentals;
+        return rentalRepository.findByPostOwnerId(userId, pageable);
     }
 
     // 나의 모든 대여 목록
     @Transactional(readOnly = true)
     public Page<RentalResponse> getMyAllRentals(Long userId, Pageable pageable) {
-        Page<RentalResponse> rentals = rentalRepository.findByUserIdOrPostOwnerId(userId, pageable);
-        return rentals;
+        return rentalRepository.findByUserIdOrPostOwnerId(userId, pageable);
     }
 }
