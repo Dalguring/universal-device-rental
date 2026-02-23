@@ -223,48 +223,39 @@ public interface UserApiDocs {
                 examples = @ExampleObject(
                     value = """
                         {
-                          "success": true,
-                          "code": "200",
-                          "message": "OK",
-                          "data": {
-                            "content": [
-                              {
-                                "postId": 1,
-                                "userId": 1,
-                                "categoryName": "갤럭시 울트라",
-                                "userName": "서성민",
-                                "title": "갤럭시 S25엣지 대여",
-                                "description": "테스트 수정 입니다",
-                                "pricePerDay": 52000,
-                                "maxRentalDays": 20,
-                                "isParcel": true,
-                                "isMeetup": true,
-                                "status": "AVAILABLE",
-                                "imageUrls": ["http://unirental.duckdns.org/images/6d82b234-6708-4875-ba60-80af76cc9e69.jpg",
-                                              "http://unirental.duckdns.org/images/20689993-ef98-4919-b8e9-631448253749.jpg"],
-                                "createAt": "2026-01-28T20:55:58.522954",
-                                "updateAt": "2026-01-29T20:45:03.049727"
-                              }
-                            ],
-                            "pageable": {
-                              "pageNumber": 0,
-                              "pageSize": 20,
-                              "sort": {
-                                "sorted": true,
-                                "unsorted": false,
-                                "empty": false
-                              }
-                            },
-                            "totalElements": 15,
-                            "totalPages": 1,
-                            "last": true,
-                            "size": 20,
-                            "number": 0,
-                            "first": true,
-                            "numberOfElements": 15,
-                            "empty": false
-                          }
-                        }
+                           "success": true,
+                           "code": "200",
+                           "message": "요청이 성공적으로 처리되었습니다.",
+                           "data": {
+                             "content": [
+                               {
+                                 "categoryName": "아이폰",
+                                 "createAt": "2026-02-01T15:11:24.081793",
+                                 "description": "아이폰 17pro 대여합니다.",
+                                 "imageUrls": [
+                                   "http://unirental.duckdns.org/images/ca7470ce-7133-485d-b0f7-33e5f71724c9.jpg",
+                                   "http://unirental.duckdns.org/images/c4ef577c-daaa-4da7-8f7a-963bfc605439.png"
+                                 ],
+                                 "isMeetup": false,
+                                 "isParcel": true,
+                                 "maxRentalDays": 30,
+                                 "postId": 2,
+                                 "pricePerDay": 10000,
+                                 "status": "AVAILABLE",
+                                 "title": "아이폰 대여",
+                                 "updateAt": "2026-02-04T13:05:27.997911",
+                                 "userId": 1,
+                                 "userName": "서성민"
+                               }
+                             ],
+                             "page": {
+                               "size": 20,
+                               "number": 0,
+                               "totalElements": 2,
+                               "totalPages": 1
+                             }
+                           }
+                         }
                         """
                 )
             )
