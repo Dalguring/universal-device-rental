@@ -1,7 +1,6 @@
 package com.rentify.rentify_api.user.controller;
 
 import com.rentify.rentify_api.user.dto.AuthMeResponse;
-import com.rentify.rentify_api.user.dto.CreateUserRequest;
 import com.rentify.rentify_api.user.dto.SendVerificationCodeRequest;
 import com.rentify.rentify_api.user.dto.VerifyEmailRequest;
 import io.swagger.v3.oas.annotations.Operation;
@@ -46,7 +45,6 @@ public interface AuthApiDocs {
             content = @Content(
                 mediaType = "application/json",
                 examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
-                    value = ""
                 )
             )
         )
@@ -142,7 +140,7 @@ public interface AuthApiDocs {
             )
         )
     })
-    @PostMapping("/email-verfication/code")
+    @PostMapping("/email-verification/code")
     ResponseEntity<com.rentify.rentify_api.common.response.ApiResponse<Void>> sendVerificationCode(
         @io.swagger.v3.oas.annotations.parameters.RequestBody(
             description = "이메일 인증 코드 요청 데이터",
@@ -212,7 +210,7 @@ public interface AuthApiDocs {
             )
         )
     })
-    @PostMapping("/email-verfication")
+    @PostMapping("/email-verification/code/verify")
     ResponseEntity<com.rentify.rentify_api.common.response.ApiResponse<Void>> verifyEmail(
         @io.swagger.v3.oas.annotations.parameters.RequestBody(
             description = "이메일 인증 요청 데이터",

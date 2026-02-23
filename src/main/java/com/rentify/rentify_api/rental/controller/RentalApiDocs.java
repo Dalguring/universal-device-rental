@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -263,7 +264,7 @@ public interface RentalApiDocs {
             )
         )
     })
-    @PostMapping("/{rentalId}/confirm")
+    @PatchMapping("/{rentalId}/confirm")
     ResponseEntity<ApiResponse<RentalResponse>> confirmRental(
         @Parameter(hidden = true)
         @AuthenticationPrincipal Long userId,
@@ -374,7 +375,7 @@ public interface RentalApiDocs {
             )
         )
     })
-    @PostMapping("/{rentalId}/cancel")
+    @PatchMapping("/{rentalId}/cancel")
     ResponseEntity<ApiResponse<RentalResponse>> cancelRental(
         @Parameter(hidden = true)
         @AuthenticationPrincipal Long userId,

@@ -72,7 +72,7 @@ public class AuthController implements AuthApiDocs {
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, "토큰 갱신 성공"));
     }
 
-    @PostMapping("/email-verfication/code")
+    @PostMapping("/email-verification/code")
     @Override
     public ResponseEntity<ApiResponse<Void>> sendVerificationCode(
         @Valid @RequestBody SendVerificationCodeRequest request
@@ -81,7 +81,7 @@ public class AuthController implements AuthApiDocs {
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, "인증 번호가 전송되었습니다."));
     }
 
-    @PostMapping("/email-verfication")
+    @PostMapping("/email-verification/code/verify")
     @Override
     public ResponseEntity<ApiResponse<Void>> verifyEmail(
         @Valid @RequestBody VerifyEmailRequest request

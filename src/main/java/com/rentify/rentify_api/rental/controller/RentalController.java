@@ -29,7 +29,7 @@ public class RentalController implements RentalApiDocs {
     }
 
     @Override
-    @PostMapping("/{rentalId}/confirm")
+    @PatchMapping("/{rentalId}/confirm")
     public ResponseEntity<ApiResponse<RentalResponse>> confirmRental(
         @AuthenticationPrincipal Long userId,
         @PathVariable Long rentalId
@@ -39,7 +39,7 @@ public class RentalController implements RentalApiDocs {
     }
 
     @Override
-    @PostMapping("/{rentalId}/cancel")
+    @PatchMapping("/{rentalId}/cancel")
     public ResponseEntity<ApiResponse<RentalResponse>> cancelRental(
         @AuthenticationPrincipal Long userId,
         @PathVariable Long rentalId
