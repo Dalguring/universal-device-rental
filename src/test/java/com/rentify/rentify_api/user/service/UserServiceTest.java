@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -16,7 +18,9 @@ import com.rentify.rentify_api.common.idempotency.IdempotencyKeyRepository;
 import com.rentify.rentify_api.common.idempotency.IdempotencyStatus;
 import com.rentify.rentify_api.user.dto.CreateUserRequest;
 import com.rentify.rentify_api.user.dto.PasswordUpdateRequest;
+import com.rentify.rentify_api.user.dto.UserUpdateRequest;
 import com.rentify.rentify_api.user.entity.User;
+import com.rentify.rentify_api.user.exception.DuplicateEmailException;
 import com.rentify.rentify_api.user.exception.UserNotFoundException;
 import com.rentify.rentify_api.user.repository.UserRepository;
 import java.util.HashMap;
@@ -231,6 +235,87 @@ class UserServiceTest {
             // when & then
             assertThatThrownBy(() -> userService.changePassword(100L, request))
                 .isInstanceOf(InvalidValueException.class);
+        }
+    }
+
+    @Nested
+    @DisplayName("사용자 정보 수정 테스트 그룹")
+    class UserInfo {
+
+        @Test
+        @DisplayName("사용자 정보 수정 성공")
+        void update_user_info_success() {
+            // given
+            Long userId = 10L;
+            User user = User.builder()
+                .id(userId)
+                .name("테스트유저")
+                .address("주소1")
+                .email("test@test.com")
+                .account("12341234")
+                .build();
+            UserUpdateRequest request = UserUpdateRequest.builder()
+                .name("수정유저")
+                .email("test2@test.com")
+                .build();
+
+            given(userRepository.findById(userId)).willReturn(Optional.of(user));
+            given(userRepository.findByEmail(request.getEmail())).willReturn(Optional.empty());
+
+            // when
+            userService.updateUserinfo(userId, request);
+
+            // then
+            assertThat(user.getName()).isEqualTo("수정유저");
+            assertThat(user.getEmail()).isEqualTo("test2@test.com");
+
+            assertThat(user.getAddress()).isEqualTo("주소1");
+            assertThat(user.getAccount()).isEqualTo("12341234");
+
+            verify(userRepository, atLeastOnce()).findById(userId);
+            verify(userRepository, atLeastOnce()).findByEmail(request.getEmail());
+        }
+
+        @Test
+        @DisplayName("사용자 정보 수정 실패: 존재하지 않는 유저의 요청의 경우 실패")
+        void update_user_info_fail_not_found_user() {
+            // given
+            UserUpdateRequest request = UserUpdateRequest.builder().build();
+
+            given(userRepository.findById(1L)).willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> userService.updateUserinfo(1L, request))
+                .isInstanceOf(UserNotFoundException.class);
+
+            verify(userRepository, never()).findByEmail(any());
+        }
+
+        @Test
+        @DisplayName("사용자 정보 수정 실패: 이미 존재하는 이메일로 수정하려는 경우 실패")
+        void update_user_info_fail_already_exists_email() {
+            // given
+            Long userId = 10L;
+            User user = User.builder()
+                .id(userId)
+                .email("user@mail.com")
+                .build();
+            User user2 = User.builder()
+                .id(20L)
+                .email("exists@mail.com")
+                .build();
+            UserUpdateRequest request = UserUpdateRequest.builder()
+                .email("exists@mail.com")
+                .build();
+
+            given(userRepository.findById(userId)).willReturn(Optional.of(user));
+            given(userRepository.findByEmail(request.getEmail())).willReturn(Optional.of(user2));
+
+            // when & then
+            assertThatThrownBy(() -> userService.updateUserinfo(userId, request))
+                .isInstanceOf(DuplicateEmailException.class);
+
+            verify(userRepository, atLeastOnce()).findByEmail(request.getEmail());
         }
     }
 }
