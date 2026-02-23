@@ -93,4 +93,20 @@ public class User {
     public void updatePassword(String hashedPassword) {
         this.password = hashedPassword;
     }
+
+    public void updateName(String name) {
+        this.name = name;
+    }
+
+    public void updateEmail(String email) {
+        this.email = email;
+    }
+
+    public void updateAddress(String address) {
+        this.address = address;
+    }
+
+    public void updateAccount(String account) {
+        this.account = account;
+    }
 }

@@ -17,7 +17,7 @@ import com.rentify.rentify_api.rental.service.RentalService;
 import com.rentify.rentify_api.user.dto.CreateUserRequest;
 import com.rentify.rentify_api.user.dto.LoginRequest;
 import com.rentify.rentify_api.user.dto.PasswordUpdateRequest;
-import com.rentify.rentify_api.user.dto.UserResponse;
+import com.rentify.rentify_api.user.dto.UserUpdateRequest;
 import com.rentify.rentify_api.user.entity.LoginResponse;
 import com.rentify.rentify_api.user.entity.RefreshToken;
 import com.rentify.rentify_api.user.entity.User;
@@ -147,23 +147,6 @@ public class UserService {
         return new LoginResponse(accessToken, refreshToken);
     }
 
-    @Transactional(readOnly = true)
-    public UserResponse getUserInfo(Long id) {
-        User user = userRepository.findById(id)
-            .orElseThrow(UserNotFoundException::new);
-
-        return UserResponse.builder()
-            .id(user.getId())
-            .name(user.getName())
-            .email(user.getEmail())
-            .address(user.getAddress())
-            .bank(user.getBank())
-            .account(user.getAccount())
-            .phone(user.getPhone())
-            .isActive(user.getIsActive())
-            .build();
-    }
-
     @Transactional
     public String refreshAccessToken(String refreshTokenString) {
         // DB에서 RefreshToken 조회
@@ -233,5 +216,32 @@ public class UserService {
 
         String hashedPassword = passwordEncoder.encode(request.newPassword());
         user.updatePassword(hashedPassword);
+    }
+
+    @Transactional
+    public void updateUserinfo(Long userId, UserUpdateRequest request) {
+        User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+
+        if (request.getEmail() != null) {
+            userRepository.findByEmail(request.getEmail())
+                .ifPresent(u -> {
+                    if (!u.getId().equals(userId)) {
+                        throw new DuplicateEmailException();
+                    }
+                });
+            user.updateEmail(request.getEmail());
+        }
+
+        if (request.getName() != null) {
+            user.updateName(request.getName());
+        }
+
+        if (request.getAddress() != null) {
+            user.updateAddress(request.getAddress());
+        }
+
+        if (request.getAccount() != null) {
+            user.updateAccount(request.getAccount());
+        }
     }
 }
