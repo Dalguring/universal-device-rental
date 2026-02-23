@@ -52,11 +52,13 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/users/logout").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/users/me/posts").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/users/me/rentals").authenticated()
+                .requestMatchers(HttpMethod.PATCH, "/api/users/me/password").authenticated()
+                .requestMatchers(HttpMethod.PATCH, "/api/users/me").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll()
                 // Auth API
                 .requestMatchers(HttpMethod.GET, "/auth/me").authenticated()
                 .requestMatchers(HttpMethod.POST, "/auth/refresh").permitAll()
-                .requestMatchers(HttpMethod.POST, "/auth/email-verfication/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/auth/email-verification/**").permitAll()
                 // Post API
                 .requestMatchers(HttpMethod.GET, "/api/posts/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/posts").authenticated()
