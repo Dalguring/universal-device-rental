@@ -6,10 +6,9 @@ import com.rentify.rentify_api.rental.dto.RentalResponse;
 import com.rentify.rentify_api.user.dto.CreateUserRequest;
 import com.rentify.rentify_api.user.dto.LoginRequest;
 import com.rentify.rentify_api.user.dto.PasswordUpdateRequest;
-import com.rentify.rentify_api.user.dto.UserResponse;
+import com.rentify.rentify_api.user.dto.UserUpdateRequest;
 import com.rentify.rentify_api.user.entity.LoginResponse;
 import com.rentify.rentify_api.user.service.UserService;
-import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -27,7 +26,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -54,13 +52,6 @@ public class UserController implements UserApiDocs {
 
         return ResponseEntity.created(location)
             .body(ApiResponse.success(HttpStatus.CREATED, "회원가입 성공"));
-    }
-
-    @Hidden
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<UserResponse>> getUserById(@PathVariable Long id) {
-        UserResponse response = userService.getUserInfo(id);
-        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, response));
     }
 
     @PostMapping("/login")
@@ -146,5 +137,15 @@ public class UserController implements UserApiDocs {
     ) {
         userService.changePassword(userId, request);
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, "패스워드 변경 성공"));
+    }
+
+    @Override
+    @PatchMapping("/me")
+    public ResponseEntity<ApiResponse<Void>> updateUserInfo(
+        @AuthenticationPrincipal Long userId,
+        @Valid @RequestBody UserUpdateRequest request
+    ) {
+        userService.updateUserinfo(userId, request);
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, "회원정보 수정 성공"));
     }
 }

@@ -5,6 +5,7 @@ import com.rentify.rentify_api.rental.dto.RentalResponse;
 import com.rentify.rentify_api.user.dto.CreateUserRequest;
 import com.rentify.rentify_api.user.dto.LoginRequest;
 import com.rentify.rentify_api.user.dto.PasswordUpdateRequest;
+import com.rentify.rentify_api.user.dto.UserUpdateRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -142,7 +143,7 @@ public interface UserApiDocs {
         ),
         @ApiResponse(
             responseCode = "404",
-            description = "사용자를 찾을 수 없음",
+            description = "존재하지 않는 회원",
             content = @Content(
                 mediaType = "application/json",
                 examples = @ExampleObject(
@@ -425,7 +426,7 @@ public interface UserApiDocs {
             content = @Content(
                 mediaType = "application/json",
                 examples = @ExampleObject(
-                    value = "{\"success\": false, \"code\": \"401\", \"message\": \"기존과 동일한 비밀번호로 변경할 수 없습니다.\", \"data\": null}"
+                    value = "{\"success\": false, \"code\": \"400\", \"message\": \"기존과 동일한 비밀번호로 변경할 수 없습니다.\", \"data\": null}"
                 )
             )
         ),
@@ -460,5 +461,76 @@ public interface UserApiDocs {
             )
         )
         @Valid @org.springframework.web.bind.annotation.RequestBody PasswordUpdateRequest request
+    );
+
+    @Operation(summary = "회원정보 수정", description = "회원의 이름, 이메일, 계좌, 주소 정보를 업데이트 합니다.")
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "회원정보 수정 성공",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = "{\"success\": true, \"code\": \"200\", \"message\": \"회원정보 수정 성공\", \"data\": null}"
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "잘못된 요청 (유효성 검사 실패)",
+            content = @Content(
+                mediaType = "application/json",
+                examples = {
+                    @ExampleObject(
+                        name = "이메일 형식 검증 실패",
+                        value = "{\"success\": false, \"code\": \"400\", \"message\": \"email : 이메일 형식이 올바르지 않습니다.\", \"data\": null}"
+                    ),
+                    @ExampleObject(
+                        name = "계좌번호 형식 검증 실패",
+                        value = "{\"success\": false, \"code\": \"400\", \"message\": \"계좌번호는 숫자만 사용한 10 ~ 20자리여야 합니다.\", \"data\": null}"
+                    )
+                }
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "존재하지 않는 회원",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = "{\"success\": false, \"code\": \"404\", \"message\": \"존재하지 않는 사용자입니다.\", \"data\": null}"
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "409",
+            description = "이미 가입된 이메일 주소",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = "{\"success\": false, \"code\": \"409\", \"message\": \"이미 가입된 이메일 주소입니다.\", \"data\": null}"
+                )
+            )
+        )
+    })
+    @PatchMapping("/me")
+    ResponseEntity<com.rentify.rentify_api.common.response.ApiResponse<Void>> updateUserInfo(
+        @AuthenticationPrincipal Long userId,
+        @RequestBody(
+            description = "회원정보 수정 요청 데이터<br/>이름, 이메일, 주소, 계좌 중 수정된 데이터만 요청",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = UserUpdateRequest.class),
+                examples = @ExampleObject(
+                    value = """
+                        {
+                            "email": "modified@email.com",
+                            "account": "30242315606176"
+                        }
+                        """
+                )
+            )
+        )
+        @Valid @org.springframework.web.bind.annotation.RequestBody UserUpdateRequest request
     );
 }
