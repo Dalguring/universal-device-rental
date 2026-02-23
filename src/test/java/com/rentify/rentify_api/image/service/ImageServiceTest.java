@@ -157,7 +157,7 @@ class ImageServiceTest {
         List<Image> savedImages = captor.getValue();
         assertThat(savedImages).hasSize(2);
 
-        Image file1 = savedImages.get(0);
+        Image file1 = savedImages.getFirst();
         assertThat(file1.getUrl()).isEqualTo("http://test.com:8080/images/test1.png");
         assertThat(file1.getFilename()).isEqualTo("test1.png");
         assertThat(file1.getOrder()).isEqualTo((short) 0);

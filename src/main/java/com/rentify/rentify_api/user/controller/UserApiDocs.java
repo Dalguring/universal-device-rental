@@ -1,6 +1,7 @@
 package com.rentify.rentify_api.user.controller;
 
 import com.rentify.rentify_api.post.dto.PostDetailResponse;
+import com.rentify.rentify_api.rental.dto.RentalResponse;
 import com.rentify.rentify_api.user.dto.CreateUserRequest;
 import com.rentify.rentify_api.user.dto.LoginRequest;
 import com.rentify.rentify_api.user.dto.PasswordUpdateRequest;
@@ -310,6 +311,109 @@ public interface UserApiDocs {
         )
         @RequestParam(defaultValue = "false") boolean includeHidden,
         @ParameterObject Pageable pageable
+    );
+
+    @Operation(
+            summary = "내 대여 내역 조회",
+            description = "로그인한 사용자의 대여 내역을 페이징하여 조회합니다.<br/> " +
+                    "role 파라미터 : 빌려준 내역(LENDER), 빌린 내역(BORROWER), 전체(미입력)"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "조회 성공",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = Page.class),
+                            examples = @ExampleObject(
+                                    value = """
+                    {
+                      "success": true,
+                      "code": "200",
+                      "message": "OK",
+                      "data": {
+                        "content": [
+                          {
+                            "rentalId": 15,
+                             "userId": 2,
+                             "borrowerName": "김빌림",
+                             "postId": 1,
+                             "title": "갤럭시 S25엣지 대여",
+                             "lenderName": "이대여",
+                             "startDate": "2026-02-25",
+                             "endDate": "2026-02-28",
+                             "receiveMethod": "PARCEL",
+                             "status": "IN_PROGRESS",
+                             "totalPrice": 156000,
+                            "createdAt": "2026-02-20T14:30:00.123456",
+                            "updatedAt": "2026-02-21T09:15:00.654321"
+                          }
+                        ],
+                        "pageable": {
+                          "pageNumber": 0,
+                          "pageSize": 20,
+                          "sort": {
+                            "sorted": true,
+                            "unsorted": false,
+                            "empty": false
+                          }
+                        },
+                        "totalElements": 5,
+                        "totalPages": 1,
+                        "last": true,
+                        "size": 20,
+                        "number": 0,
+                        "first": true,
+                        "numberOfElements": 5,
+                        "empty": false
+                      }
+                    }
+                    """
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "인증 실패 (로그인 필요)",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"success\": false, \"code\": \"401\", \"message\": \"인증이 필요합니다.\", \"data\": null}"
+                            )
+                    )
+            )
+    })
+    @Parameters({
+            @Parameter(
+                    name = "page",
+                    description = "페이지 번호 (0부터 시작)",
+                    in = ParameterIn.QUERY,
+                    schema = @Schema(type = "integer", defaultValue = "0")
+            ),
+            @Parameter(
+                    name = "size",
+                    description = "한 페이지당 개수",
+                    in = ParameterIn.QUERY,
+                    schema = @Schema(type = "integer", defaultValue = "20")
+            ),
+            @Parameter(
+                    name = "sort",
+                    description = "정렬 기준 (필드명,방향). 예: createdAt,desc",
+                    in = ParameterIn.QUERY,
+                    schema = @Schema(type = "array", implementation = String.class),
+                    example = "createdAt,desc"
+            )
+    })
+    @GetMapping("/me/rentals")
+    ResponseEntity<com.rentify.rentify_api.common.response.ApiResponse<Page<RentalResponse>>> getMyRentals(
+            @Parameter(hidden = true) @AuthenticationPrincipal Long userId,
+            @Parameter(
+                    name = "role",
+                    description = "조회 역할 필터 (예: LENDER(빌려준 내역), BORROWER(빌린 내역))",
+                    example = "BORROWER"
+            )
+            @RequestParam(required = false) String role,
+            @ParameterObject Pageable pageable
     );
 
     @Operation(summary = "패스워드 변경", description = "사용자의 패스워드를 변경합니다.")
