@@ -27,7 +27,8 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
         "/v3/api-docs",
         "/swagger-resources",
         "/webjars",
-        "/actuator"
+        "/actuator",
+        "/images"
     );
 
     @Override
@@ -83,10 +84,11 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
 
     private String getClientIp(HttpServletRequest request) {
         String ip = request.getHeader("X-Forwarded-For");
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
             ip = request.getHeader("Proxy-Client-IP");
         }
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
             ip = request.getRemoteAddr();
         }
 
