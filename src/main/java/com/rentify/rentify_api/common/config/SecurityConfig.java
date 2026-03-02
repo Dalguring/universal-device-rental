@@ -24,6 +24,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
     private static final String[] SWAGGER_WHITELIST = {
         "/swagger-ui.html",
@@ -54,6 +55,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/users/me/rentals").authenticated()
                 .requestMatchers(HttpMethod.PATCH, "/api/users/me/password").authenticated()
                 .requestMatchers(HttpMethod.PATCH, "/api/users/me").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/users/me/coupons").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/users/me/coupons").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll()
                 // Auth API
                 .requestMatchers(HttpMethod.GET, "/auth/me").authenticated()
@@ -67,10 +70,15 @@ public class SecurityConfig {
                 .requestMatchers("/api/rentals/**").authenticated()
                 // Category API
                 .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
+                // Coupon API
+                .requestMatchers(HttpMethod.GET, "/api/coupons/**").permitAll()
                 // Image API
                 .requestMatchers(HttpMethod.POST, "/api/images/**").authenticated()
                 .requestMatchers("/images/**").permitAll()
                 .anyRequest().authenticated()
+            )
+            .exceptionHandling(exception -> exception
+                .authenticationEntryPoint(customAuthenticationEntryPoint)
             )
             .addFilterBefore(
                 jwtAuthenticationFilter,
