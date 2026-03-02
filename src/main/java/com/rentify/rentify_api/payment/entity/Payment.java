@@ -1,13 +1,17 @@
 package com.rentify.rentify_api.payment.entity;
 
+import com.rentify.rentify_api.coupon.entity.Coupon;
 import com.rentify.rentify_api.rental.entity.Rental;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
@@ -35,14 +39,16 @@ public class Payment {
     @JoinColumn(name = "rental_id", nullable = false)
     private Rental rental;
 
-//    @OneToOne
-//    @JoinColumn(name = "coupon_id")
-//    private Coupon
+    @OneToOne
+    @JoinColumn(name = "coupon_id")
+    private Coupon coupon;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "payment_method", nullable = false)
     private PaymentMethod paymentMethod;
 
     @Column(name = "status", nullable = false)
+    @Enumerated(EnumType.STRING)
     @Builder.Default
     private PaymentStatus paymentStatus = PaymentStatus.PENDING;
 

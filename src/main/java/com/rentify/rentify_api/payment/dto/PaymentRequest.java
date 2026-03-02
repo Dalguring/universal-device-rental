@@ -8,8 +8,8 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Builder
+//@AllArgsConstructor(access = AccessLevel.PRIVATE)
+//@Builder
 public class PaymentRequest {
 
 }
