@@ -17,6 +17,7 @@ spring:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
         javax.persistence.validation.mode: none
+        default_batch_fetch_size: 100
 
   datasource:
     driver-class-name: org.postgresql.Driver
