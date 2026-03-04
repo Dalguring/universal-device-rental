@@ -35,27 +35,27 @@ public class PaymentController implements PaymentApiDocs {
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK));
     }
 
-    @PostMapping("/{merchant_uid}/verify")
-    public ResponseEntity<ApiResponse<Void>> verifyPayment(@PathVariable String merchant_uid) {
-        paymentService.verifyPayment();
-        return ResponseEntity.ok((ApiResponse.success(HttpStatus.OK)));
-    }
-
     @GetMapping
     public ResponseEntity<ApiResponse<Void>> getMyPayments() {
         paymentService.getMyPayments();
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK));
     }
 
-    @GetMapping("/{payment_id}")
-    public ResponseEntity<ApiResponse<Void>> getMyPayment(@PathVariable String payment_id) {
-        paymentService.getMyPayment();
+    @GetMapping("/{paymentId}")
+    public ResponseEntity<ApiResponse<Void>> getMyPayment(@PathVariable String paymentId) {
+        paymentService.getMyPayment(paymentId);
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK));
     }
 
-    @PostMapping("/{payment_id}/cancellations")
-    public ResponseEntity<ApiResponse<Void>> cancelPayment(@PathVariable String payment_id) {
-        paymentService.cancelPayment();
+    @PostMapping("/{paymentId}/cancellations")
+    public ResponseEntity<ApiResponse<Void>> cancelPayment(@PathVariable String paymentId) {
+        paymentService.cancelPayment(paymentId);
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK));
+    }
+
+    @GetMapping("/{paymentId}/events")
+    public ResponseEntity<ApiResponse<Void>> getPaymentEvents(@PathVariable String paymentId) {
+        paymentService.getPaymentEvents(paymentId);
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK));
     }
 }

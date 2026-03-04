@@ -23,9 +23,12 @@ public class PaymentService {
     public void getMyPayments() {
     }
 
-    public void getMyPayment() {
+    public void getMyPayment(String paymentId) {
     }
 
-    public void cancelPayment() {
+    public void cancelPayment(String paymentId) {
+    }
+
+    public void getPaymentEvents(String paymentId) {
     }
 }

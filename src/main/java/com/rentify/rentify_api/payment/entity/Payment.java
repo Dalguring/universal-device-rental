@@ -1,7 +1,8 @@
 package com.rentify.rentify_api.payment.entity;
 
-import com.rentify.rentify_api.coupon.entity.Coupon;
+import com.rentify.rentify_api.coupon.entity.UserCoupon;
 import com.rentify.rentify_api.rental.entity.Rental;
+import com.rentify.rentify_api.user.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -36,45 +37,42 @@ public class Payment {
     private Long id;
 
     @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    @ManyToOne
     @JoinColumn(name = "rental_id", nullable = false)
     private Rental rental;
 
     @OneToOne
-    @JoinColumn(name = "coupon_id")
-    private Coupon coupon;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "payment_method", nullable = false)
-    private PaymentMethod paymentMethod;
-
-    @Column(name = "status", nullable = false)
-    @Enumerated(EnumType.STRING)
-    @Builder.Default
-    private PaymentStatus paymentStatus = PaymentStatus.PENDING;
+    @JoinColumn(name = "user_coupon_id")
+    private UserCoupon userCoupon;
 
     @Column(name = "total_amount", nullable = false)
     private Integer totalAmount;
 
-    @Column(name = "net_amount", nullable = false)
-    private Integer netAmount;
-
-    @Column(name = "point_usage", nullable = false)
-    @Builder.Default
-    private Boolean isPointUsed = false;
-
-    @Column(name = "point_used_amount")
+    @Column(name = "point_used_amount", nullable = false)
     @Builder.Default
     private Integer usedPoint = 0;
 
-    @Column(name = "coupon_discount_amount")
+    @Column(name = "coupon_discount_amount", nullable = false)
     @Builder.Default
     private Integer couponDiscount = 0;
 
-    @Column(name = "pg_company")
-    private String pgCompany;
+    @Column(name = "final_amount", nullable = false)
+    private Integer finalAmount;
 
-    @Column(name = "pg_tid")
-    private String pgTid;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    @Builder.Default
+    private PaymentStatus status = PaymentStatus.PENDING;
+
+    @Column(name = "version", nullable = false)
+    @Builder.Default
+    private Integer version = 0;
+
+    @Column(name = "fail_reason")
+    private String failReason;
 
     @Column(name = "paid_at")
     private LocalDateTime paidAt;
@@ -94,18 +92,18 @@ public class Payment {
     private LocalDateTime updateAt;
 
     private void updateAsPaid() {
-        this.paymentStatus = PaymentStatus.PAID;
+        this.status = PaymentStatus.PAID;
     }
 
     private void updateAsFailed() {
-        this.paymentStatus = PaymentStatus.FAILED;
+        this.status = PaymentStatus.FAILED;
     }
 
     private void updateAsCanceled() {
-        this.paymentStatus = PaymentStatus.CANCELED;
+        this.status = PaymentStatus.CANCELED;
     }
 
     private void updateAsRefunded() {
-        this.paymentStatus = PaymentStatus.REFUNDED;
+        this.status = PaymentStatus.REFUNDED;
     }
 }

@@ -19,16 +19,14 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.type.SqlTypes;
 
 @Entity
-@Table(name = "user_coupons")
+@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
-@Getter
+@Table(name = "user_coupons")
 public class UserCoupon {
 
     @Id
@@ -43,12 +41,6 @@ public class UserCoupon {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "coupon_id", nullable = false)
     private Coupon coupon;
-
-    @Column(name = "rental_id")
-    private Long rentalId;
-
-    @Column(name = "payment_id")
-    private Long paymentId;
 
     @CreationTimestamp
     @Column(name = "issued_at", nullable = false, updatable = false)
