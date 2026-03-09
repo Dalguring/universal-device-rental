@@ -373,16 +373,17 @@ public interface UserApiDocs {
                             "content": [
                               {
                                 "rentalId": 15,
-                                 "userId": 2,
-                                 "borrowerName": "김빌림",
-                                 "postId": 1,
-                                 "title": "갤럭시 S25엣지 대여",
-                                 "lenderName": "이대여",
-                                 "startDate": "2026-02-25",
-                                 "endDate": "2026-02-28",
-                                 "receiveMethod": "PARCEL",
-                                 "status": "IN_PROGRESS",
-                                 "totalPrice": 156000,
+                                "userId": 2,
+                                "borrowerName": "김빌림",
+                                "postId": 1,
+                                "title": "갤럭시 S25엣지 대여",
+                                "lenderName": "이대여",
+                                "startDate": "2026-02-25",
+                                "endDate": "2026-02-28",
+                                "receiveMethod": "PARCEL",
+                                "status": "IN_PROGRESS",
+                                "thumbnailUrl": "http://unirental.duckdns.org/images/b4485ceb-3e18-4883-bb67-7f29d5f1b805.jpg",
+                                "totalPrice": 156000,
                                 "createdAt": "2026-02-20T14:30:00.123456",
                                 "updatedAt": "2026-02-21T09:15:00.654321"
                               }
