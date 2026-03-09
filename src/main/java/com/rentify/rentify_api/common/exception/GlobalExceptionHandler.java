@@ -1,6 +1,7 @@
 package com.rentify.rentify_api.common.exception;
 
 import com.rentify.rentify_api.common.response.ApiResponse;
+import com.rentify.rentify_api.user.exception.UnauthenticatedException;
 import jakarta.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
@@ -108,6 +109,15 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
             .body(ApiResponse.error(HttpStatus.BAD_REQUEST, ex.getMessage()));
+    }
+
+    @ExceptionHandler(UnauthenticatedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleUnauthenticatedException(UnauthenticatedException ex) {
+        log.warn("Unauthenticated exception occurred: {}", ex.getMessage());
+
+        return ResponseEntity
+            .status(HttpStatus.UNAUTHORIZED)
+            .body(ApiResponse.error(HttpStatus.UNAUTHORIZED, ex.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)

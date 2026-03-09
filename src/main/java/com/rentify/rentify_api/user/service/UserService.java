@@ -1,5 +1,10 @@
 package com.rentify.rentify_api.user.service;
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.gson.GsonFactory;
 import com.rentify.rentify_api.common.exception.AccountDeactivatedException;
 import com.rentify.rentify_api.common.exception.IdempotencyException;
 import com.rentify.rentify_api.common.exception.InvalidPasswordException;
@@ -23,16 +28,20 @@ import com.rentify.rentify_api.user.entity.RefreshToken;
 import com.rentify.rentify_api.user.entity.User;
 import com.rentify.rentify_api.user.entity.UserRole;
 import com.rentify.rentify_api.user.exception.DuplicateEmailException;
+import com.rentify.rentify_api.user.exception.UnauthenticatedException;
 import com.rentify.rentify_api.user.exception.UserNotFoundException;
 import com.rentify.rentify_api.user.repository.RefreshTokenRepository;
 import com.rentify.rentify_api.user.repository.UserRepository;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -52,6 +61,9 @@ public class UserService {
     private final RefreshTokenRepository refreshtokenRepository;
     private final PostRepository postRepository;
     private final RentalService rentalService;
+
+    @Value("${spring.security.oauth2.client.registration.google.client-id}")
+    private String googleClientId;
 
     @Transactional
     public Long signup(UUID idempotencyKey, CreateUserRequest request) {
@@ -121,11 +133,48 @@ public class UserService {
     }
 
     @Transactional
-    public LoginResponse oauthLogin(String email) {
+    public LoginResponse oauthLogin(String idToken) {
+        GoogleIdToken.Payload payload = verifyGoogleToken(idToken);
+
+        String email = payload.getEmail();
+        String name = Objects.toString(payload.get("name"), null);
+        String safeName = (name != null && name.length() > 10) ? name.substring(0, 10)
+            : (name != null ? name : "구글유저");
+
         User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new NotFoundException("회원 정보를 찾을 수 없습니다."));
+            .orElseGet(() -> {
+                User newUser = User.builder()
+                    .email(email)
+                    .name(safeName)
+                    .password("SOCIAL_LOGIN")
+                    .build();
+
+                return userRepository.save(newUser);
+            });
 
         return issueTokens(user);
+    }
+
+    private Payload verifyGoogleToken(String idToken) {
+        try {
+            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
+                new NetHttpTransport(), new GsonFactory())
+                .setAudience(Collections.singletonList(googleClientId))
+                .build();
+
+            GoogleIdToken token = verifier.verify(idToken);
+
+            if (token != null) {
+                return token.getPayload();
+            } else {
+                throw new UnauthenticatedException("유효하지 않은 구글 토큰입니다.");
+            }
+        } catch (UnauthenticatedException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Google Token Verification Error", e);
+            throw new RuntimeException("구글 토큰 검증 중 오류가 발생했습니다.");
+        }
     }
 
     private LoginResponse issueTokens(User user) {

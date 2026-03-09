@@ -50,14 +50,17 @@ public class User {
     private String account;
 
     @Column(name = "point", nullable = false)
-    private Integer point;
+    @Builder.Default
+    private Integer point = 0;
 
     @Version
     @Column(name = "point_version", nullable = false)
-    private Short pointVersion;
+    @Builder.Default
+    private Short pointVersion = (short) 0;
 
     @Enumerated(EnumType.STRING)
-    private UserRole role;
+    @Builder.Default
+    private UserRole role = UserRole.USER;
 
     @Column(name = "phone", length = 11)
     private String phone;
@@ -71,7 +74,8 @@ public class User {
     private LocalDateTime updateAt;
 
     @Column(name = "is_active", nullable = false)
-    private Boolean isActive;
+    @Builder.Default
+    private Boolean isActive = true;
 
     public void addPoint(int amount) {
         if (amount < 0) {
