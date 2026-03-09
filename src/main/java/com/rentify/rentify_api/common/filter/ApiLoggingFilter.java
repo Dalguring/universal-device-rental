@@ -43,6 +43,7 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
         if (request.getContentType() != null &&
             request.getContentType().startsWith("multipart/form-data")) {
             filterChain.doFilter(request, response);
+            return;
         }
 
         ContentCachingRequestWrapper cachingRequest =
