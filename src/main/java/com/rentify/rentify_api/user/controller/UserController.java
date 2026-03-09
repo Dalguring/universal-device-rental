@@ -1,15 +1,16 @@
 package com.rentify.rentify_api.user.controller;
 
 import com.rentify.rentify_api.common.response.ApiResponse;
+import com.rentify.rentify_api.common.util.CookieUtil;
 import com.rentify.rentify_api.post.dto.PostDetailResponse;
 import com.rentify.rentify_api.rental.dto.RentalResponse;
 import com.rentify.rentify_api.user.dto.CreateUserRequest;
+import com.rentify.rentify_api.user.dto.GoogleLoginRequest;
 import com.rentify.rentify_api.user.dto.LoginRequest;
 import com.rentify.rentify_api.user.dto.PasswordUpdateRequest;
 import com.rentify.rentify_api.user.dto.UserUpdateRequest;
 import com.rentify.rentify_api.user.entity.LoginResponse;
 import com.rentify.rentify_api.user.service.UserService;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -41,6 +42,9 @@ public class UserController implements UserApiDocs {
 
     private final UserService userService;
 
+    private static final int ACCESS_TOKEN_MAX_AGE = 30 * 60;
+    private static final int REFRESH_TOKEN_MAX_AGE = 14 * 24 * 60 * 60;
+
     @Override
     @PostMapping
     public ResponseEntity<ApiResponse<Void>> createUser(
@@ -62,23 +66,28 @@ public class UserController implements UserApiDocs {
     ) {
         LoginResponse response = userService.login(request);
 
-        // AccessToken 쿠키 설정
-        Cookie accessTokenCookie = new Cookie("accessToken", response.getAccessToken());
-        accessTokenCookie.setHttpOnly(true);    // XSS 공격 방지
-        //accessTokenCookie.setSecure(true);    // HTTPS에서만 전송
-        accessTokenCookie.setPath("/");
-        accessTokenCookie.setMaxAge(30 * 60);  // 30분
-        httpResponse.addCookie(accessTokenCookie);
-
-        // RefreshToken 쿠키 설정
-        Cookie refreshTokenCookie = new Cookie("refreshToken", response.getRefreshToken());
-        refreshTokenCookie.setHttpOnly(true);
-        //refreshTokenCookie.setSecure(true);
-        refreshTokenCookie.setPath("/");
-        refreshTokenCookie.setMaxAge(14 * 24 * 60 * 60);  // 14일
-        httpResponse.addCookie(refreshTokenCookie);
+        CookieUtil.addTokenCookie(
+            httpResponse, "accessToken", response.getAccessToken(), ACCESS_TOKEN_MAX_AGE
+        );
+        CookieUtil.addTokenCookie(
+            httpResponse, "refreshToken", response.getAccessToken(), REFRESH_TOKEN_MAX_AGE
+        );
 
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, "로그인 성공"));
+    }
+
+    @PostMapping("/login/google")
+    @Override
+    public ResponseEntity<ApiResponse<Void>> googleLogin(
+        @Valid @RequestBody GoogleLoginRequest request,
+        HttpServletResponse httpResponse
+    ) {
+        LoginResponse response = userService.oauthLogin(request.idToken());
+
+        CookieUtil.addTokenCookie(httpResponse, "accessToken", response.getAccessToken(), ACCESS_TOKEN_MAX_AGE);
+        CookieUtil.addTokenCookie(httpResponse, "refreshToken", response.getRefreshToken(), REFRESH_TOKEN_MAX_AGE);
+
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, "구글 로그인 성공"));
     }
 
     @PostMapping("/logout")
@@ -87,22 +96,10 @@ public class UserController implements UserApiDocs {
         @AuthenticationPrincipal Long userId,
         HttpServletResponse response
     ) {
-        // RefreshToken DB에서 삭제
         userService.logout(userId);
 
-        // AccessToken 쿠키 삭제
-        Cookie accessTokenCookie = new Cookie("accessToken", null);
-        accessTokenCookie.setHttpOnly(true);
-        accessTokenCookie.setPath("/");
-        accessTokenCookie.setMaxAge(0);  // 즉시 만료
-        response.addCookie(accessTokenCookie);
-
-        // RefreshToken 쿠키 삭제
-        Cookie refreshTokenCookie = new Cookie("refreshToken", null);
-        refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setPath("/");
-        refreshTokenCookie.setMaxAge(0);  // 즉시 만료
-        response.addCookie(refreshTokenCookie);
+        CookieUtil.deleteCookie(response, "accessToken");
+        CookieUtil.deleteCookie(response, "refreshToken");
 
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, "로그아웃 성공"));
     }

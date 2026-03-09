@@ -50,6 +50,7 @@ public class SecurityConfig {
                 // User API
                 .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/users/login").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/users/login/google").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/users/logout").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/users/me/posts").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/users/me/rentals").authenticated()

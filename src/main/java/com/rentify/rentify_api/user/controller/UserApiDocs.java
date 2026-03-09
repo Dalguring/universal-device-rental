@@ -3,6 +3,7 @@ package com.rentify.rentify_api.user.controller;
 import com.rentify.rentify_api.post.dto.PostDetailResponse;
 import com.rentify.rentify_api.rental.dto.RentalResponse;
 import com.rentify.rentify_api.user.dto.CreateUserRequest;
+import com.rentify.rentify_api.user.dto.GoogleLoginRequest;
 import com.rentify.rentify_api.user.dto.LoginRequest;
 import com.rentify.rentify_api.user.dto.PasswordUpdateRequest;
 import com.rentify.rentify_api.user.dto.UserUpdateRequest;
@@ -166,6 +167,51 @@ public interface UserApiDocs {
             )
         )
         @org.springframework.web.bind.annotation.RequestBody LoginRequest request, HttpServletResponse httpResponse
+    );
+
+    @Operation(summary = "구글 소셜 로그인",
+        description = "id_token을 전달받아 계정이 없을 경우 생성, 있을 경우 로그인 처리하여 JWT 토큰과 refresh 토큰을 쿠키로 발급합니다.")
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "구글 로그인 성공 (JWT 토큰이 쿠키에 설정됨)",
+            headers = @Header(
+                name = "Set-Cookie",
+                description = "accessToken (HttpOnly, 24시간 유효)",
+                schema = @Schema(type = "string", example = "accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...; Path=/; Max-Age=86400; HttpOnly")
+            ),
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = "{\"success\": true, \"code\": \"200\", \"message\": \"구글 로그인 성공\", \"data\": null}"
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "토큰 인증 실패",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = "{\"success\": false, \"code\": \"400\", \"message\": \"유효하지 않은 구글 토큰입니다.\", \"data\": null}"
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "서버 내부 오류",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = "{\"success\": false, \"code\": \"500\", \"message\": \"구글 토큰 검증 중 오류가 발생했습니다.\", \"data\": null}"
+                )
+            )
+        )
+    })
+    @PostMapping("/login/google")
+    ResponseEntity<com.rentify.rentify_api.common.response.ApiResponse<Void>> googleLogin(
+        @Valid @org.springframework.web.bind.annotation.RequestBody GoogleLoginRequest request,
+        HttpServletResponse httpResponse
     );
 
     @Operation(summary = "로그아웃", description = "로그아웃하여 RefreshToken 및 쿠키의 토큰 제거합니다.")
