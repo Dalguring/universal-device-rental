@@ -27,6 +27,7 @@ public class RentalResponse {
     private LocalDate endDate;
     private ReceiveMethod receiveMethod;
     private RentalStatus status;
+    private String thumbnailUrl;
     private Integer totalPrice;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -43,6 +44,7 @@ public class RentalResponse {
                 .endDate(rental.getEndDate())
                 .receiveMethod(rental.getReceiveMethod())
                 .status(rental.getStatus())
+                .thumbnailUrl(rental.getPost().getThumbnailUrl())
                 .totalPrice(rental.getTotalPrice())
                 .createdAt(rental.getCreatedAt())
                 .updatedAt(rental.getUpdatedAt())
