@@ -11,12 +11,14 @@ public class AuthMeResponse {
     private Long userId;
     private String email;
     private String name;
+    private Integer point;
 
     public static AuthMeResponse from(User user) {
         return new AuthMeResponse(
             user.getId(),
             user.getEmail(),
-            user.getName()
+            user.getName(),
+            user.getPoint()
         );
     }
 }
