@@ -84,8 +84,12 @@ public class UserController implements UserApiDocs {
     ) {
         LoginResponse response = userService.oauthLogin(request.idToken());
 
-        CookieUtil.addTokenCookie(httpResponse, "accessToken", response.getAccessToken(), ACCESS_TOKEN_MAX_AGE);
-        CookieUtil.addTokenCookie(httpResponse, "refreshToken", response.getRefreshToken(), REFRESH_TOKEN_MAX_AGE);
+        CookieUtil.addTokenCookie(
+            httpResponse, "accessToken", response.getAccessToken(), ACCESS_TOKEN_MAX_AGE
+        );
+        CookieUtil.addTokenCookie(
+            httpResponse, "refreshToken", response.getRefreshToken(), REFRESH_TOKEN_MAX_AGE
+        );
 
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, "구글 로그인 성공"));
     }
