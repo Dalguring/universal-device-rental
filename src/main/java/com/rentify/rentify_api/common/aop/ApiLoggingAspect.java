@@ -53,7 +53,11 @@ public class ApiLoggingAspect {
             Object arg = args[i];
             String argString;
 
-            if (arg != null && !isBasicType(arg.getClass())) {
+            if (arg instanceof jakarta.servlet.http.HttpServletRequest ||
+                arg instanceof jakarta.servlet.http.HttpServletResponse) {
+                argString = arg.getClass().getSimpleName();
+            }
+            else if (arg != null && !isBasicType(arg.getClass())) {
                 try {
                     argString = objectMapper.writeValueAsString(arg);
                 } catch (Exception e) {
