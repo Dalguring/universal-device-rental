@@ -74,7 +74,7 @@ public class RentalService {
         return convertToResponse(savedRental);
     }
 
-    private void validateRentalRequest(RentalRequest request, Post post) {
+    private static void validateRentalRequest(RentalRequest request, Post post) {
         // 게시글 상태 확인
         if (post.getStatus() != PostStatus.AVAILABLE) {
             throw new RentalNotAvailableException("현재 대여할 수 없는 게시글입니다.");
@@ -124,12 +124,12 @@ public class RentalService {
         }
     }
 
-    private int calculateTotalPrice(int pricePerDay, LocalDate startDate, LocalDate endDate) {
+    private static int calculateTotalPrice(int pricePerDay, LocalDate startDate, LocalDate endDate) {
         long rentalDays = ChronoUnit.DAYS.between(startDate, endDate) + 1;
         return (int) (pricePerDay * rentalDays);
     }
 
-    private RentalResponse convertToResponse(Rental rental) {
+    private static RentalResponse convertToResponse(Rental rental) {
         return RentalResponse.builder()
             .rentalId(rental.getId())
             .userId(rental.getUser().getId())
