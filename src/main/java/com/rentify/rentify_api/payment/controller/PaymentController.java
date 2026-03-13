@@ -1,10 +1,10 @@
 package com.rentify.rentify_api.payment.controller;
 
-import com.rentify.rentify_api.common.idempotency.IdempotencyKey;
 import com.rentify.rentify_api.common.response.ApiResponse;
 import com.rentify.rentify_api.payment.dto.PaymentRequest;
 import com.rentify.rentify_api.payment.service.PaymentService;
 import jakarta.validation.Valid;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +27,7 @@ public class PaymentController implements PaymentApiDocs {
     @PostMapping
     @Override
     public ResponseEntity<ApiResponse<Void>> requestPayment(
-        @RequestHeader IdempotencyKey idempotencyKey,
+        @RequestHeader(value = "Idempotency-Key") UUID idempotencyKey,
         @AuthenticationPrincipal Long userId,
         @Valid @RequestBody PaymentRequest request
     ) {
