@@ -1,10 +1,7 @@
 package com.rentify.rentify_api.payment.service;
 
-import com.rentify.rentify_api.common.exception.IdempotencyException;
 import com.rentify.rentify_api.common.exception.InvalidValueException;
-import com.rentify.rentify_api.common.idempotency.IdempotencyKey;
-import com.rentify.rentify_api.common.idempotency.IdempotencyKeyRepository;
-import com.rentify.rentify_api.common.idempotency.IdempotencyStatus;
+import com.rentify.rentify_api.coupon.entity.Coupon;
 import com.rentify.rentify_api.coupon.entity.UserCoupon;
 import com.rentify.rentify_api.coupon.entity.UserCouponStatus;
 import com.rentify.rentify_api.coupon.exception.CouponAlreadyUsedException;
@@ -22,10 +19,7 @@ import com.rentify.rentify_api.user.exception.UnauthenticatedException;
 import com.rentify.rentify_api.user.exception.UserNotFoundException;
 import com.rentify.rentify_api.user.repository.UserRepository;
 import jakarta.validation.Valid;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -37,32 +31,18 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class PaymentService {
 
-    private final IdempotencyKeyRepository idempotencyKeyRepository;
     private final UserRepository userRepository;
     private final RentalRepository rentalRepository;
     private final UserCouponRepository userCouponRepository;
 
-    public Long requestPayment(UUID idempotencyKey, Long userId, @Valid PaymentRequest request) {
+    public Long requestPayment(Long userId, @Valid PaymentRequest request) {
         Rental rental = rentalRepository.findById(request.getRentalId())
             .orElseThrow(RentalNotFoundException::new);
         UserCoupon coupon = null;
 
-        Optional<IdempotencyKey> existKey = idempotencyKeyRepository.findById(idempotencyKey);
-
-        if (existKey.isPresent()) {
-            IdempotencyKey key = existKey.get();
-
-            if (key.getStatus() == IdempotencyStatus.SUCCESS) {
-                Map<String, Object> responseBody = key.getResponseBody();
-                return ((Number) responseBody.get("paymentId")).longValue();
-            }
-
-            throw new IdempotencyException("이전 요청이 아직 처리 중입니다. 잠시 후 결과를 확인해주세요.");
-        }
-
         validateRental(userId, rental);
 
-        if (request.getUserCouponId() != 0) {
+        if (request.getUserCouponId() != null) {
             coupon = userCouponRepository.findById(request.getUserCouponId())
                 .orElseThrow(CouponNotFoundException::new);
 
@@ -72,6 +52,8 @@ public class PaymentService {
         if (request.getPointAmount() > 0) {
             validatePoint(userId, request);
         }
+
+        validatePaymentAmount(rental, coupon, request.getPointAmount(), request.getExpectedAmount());
 
         return 0L;
     }
@@ -99,13 +81,11 @@ public class PaymentService {
 
     private void validateCoupon(Long userId, UserCoupon coupon) {
         if (!Objects.equals(coupon.getUser().getId(), userId)) {
-            throw new UnauthenticatedException("소유하지 않은 쿠폰입니다.");
+            throw new UnauthenticatedException("사용자가 소유하지 않은 쿠폰입니다.");
         }
-
         if (coupon.getStatus() == UserCouponStatus.USED) {
             throw new CouponAlreadyUsedException();
         }
-
         if (coupon.getStatus() == UserCouponStatus.EXPIRED) {
             throw new CouponNotValidException();
         }
@@ -119,6 +99,31 @@ public class PaymentService {
 
         if (pointAmount > userPoint) {
             throw new InvalidValueException("사용 가능한 포인트를 초과했습니다.");
+        }
+    }
+
+    private void validatePaymentAmount(
+        Rental rental, UserCoupon userCoupon, int pointAmount, int expectedAmount
+    ) {
+        int originPrice = rental.getTotalPrice();
+        int couponDiscount = 0;
+
+        if (userCoupon != null) {
+            Coupon coupon = userCoupon.getCoupon();
+            int couponMinOrderAmount = coupon.getMinOrderAmount();
+
+            if (originPrice < couponMinOrderAmount) {
+                throw new InvalidValueException("주문 금액이 쿠폰 최소 주문 금액보다 작습니다.");
+            }
+
+            couponDiscount = coupon.getMaxDiscountAmount();
+        }
+
+        int totalDiscount = couponDiscount + pointAmount;
+        int finalPrice = Math.max(originPrice - totalDiscount, 0);
+
+        if (finalPrice != expectedAmount) {
+            throw new InvalidValueException("결제 요청 금액이 변조되었거나 일치하지 않습니다.");
         }
     }
 }

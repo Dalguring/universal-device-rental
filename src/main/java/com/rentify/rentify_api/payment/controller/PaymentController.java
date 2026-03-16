@@ -1,10 +1,10 @@
 package com.rentify.rentify_api.payment.controller;
 
+import com.rentify.rentify_api.common.idempotency.Idempotent;
 import com.rentify.rentify_api.common.response.ApiResponse;
 import com.rentify.rentify_api.payment.dto.PaymentRequest;
 import com.rentify.rentify_api.payment.service.PaymentService;
 import jakarta.validation.Valid;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -24,14 +23,14 @@ public class PaymentController implements PaymentApiDocs {
 
     private final PaymentService paymentService;
 
-    @PostMapping
     @Override
+    @Idempotent
+    @PostMapping
     public ResponseEntity<ApiResponse<Void>> requestPayment(
-        @RequestHeader(value = "Idempotency-Key") UUID idempotencyKey,
         @AuthenticationPrincipal Long userId,
         @Valid @RequestBody PaymentRequest request
     ) {
-        paymentService.requestPayment(idempotencyKey, userId, request);
+        Long paymentId = paymentService.requestPayment(userId, request);
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK));
     }
 
@@ -47,7 +46,7 @@ public class PaymentController implements PaymentApiDocs {
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK));
     }
 
-    @PostMapping("/{paymentId}/cancellations")
+    @PostMapping("/{paymentId}/cancel")
     public ResponseEntity<ApiResponse<Void>> cancelPayment(@PathVariable String paymentId) {
         paymentService.cancelPayment(paymentId);
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK));

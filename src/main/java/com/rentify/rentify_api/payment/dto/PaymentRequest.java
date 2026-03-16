@@ -23,4 +23,7 @@ public class PaymentRequest {
     @Nullable
     @Builder.Default
     private Integer pointAmount = 0;
+
+    @NotNull(message = "Expected amount is required")
+    private Integer expectedAmount;
 }
