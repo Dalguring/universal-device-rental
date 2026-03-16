@@ -21,7 +21,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import java.util.UUID;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,7 +30,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "User API", description = "회원 가입, 로그인 등 사용자 관련 API")
@@ -96,7 +94,6 @@ public interface UserApiDocs {
             in = ParameterIn.HEADER,
             example = "123e4567-e89b-12d3-a456-426614174000"
         )
-        @RequestHeader(value = "Idempotency-Key") UUID idempotencyKey,
         @RequestBody(
             description = "회원가입 요청 데이터",
             required = true,

@@ -6,13 +6,9 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import com.rentify.rentify_api.common.exception.AccountDeactivatedException;
-import com.rentify.rentify_api.common.exception.IdempotencyException;
 import com.rentify.rentify_api.common.exception.InvalidPasswordException;
 import com.rentify.rentify_api.common.exception.InvalidValueException;
 import com.rentify.rentify_api.common.exception.NotFoundException;
-import com.rentify.rentify_api.common.idempotency.IdempotencyKey;
-import com.rentify.rentify_api.common.idempotency.IdempotencyKeyRepository;
-import com.rentify.rentify_api.common.idempotency.IdempotencyStatus;
 import com.rentify.rentify_api.common.jwt.JwtTokenProvider;
 import com.rentify.rentify_api.post.dto.PostDetailResponse;
 import com.rentify.rentify_api.post.entity.Post;
@@ -34,15 +30,10 @@ import com.rentify.rentify_api.user.repository.RefreshTokenRepository;
 import com.rentify.rentify_api.user.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -56,7 +47,6 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final IdempotencyKeyRepository idempotencyKeyRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final RefreshTokenRepository refreshtokenRepository;
     private final PostRepository postRepository;
@@ -66,34 +56,9 @@ public class UserService {
     private String googleClientId;
 
     @Transactional
-    public Long signup(UUID idempotencyKey, CreateUserRequest request) {
-        Optional<IdempotencyKey> existKey = idempotencyKeyRepository.findById(idempotencyKey);
-
-        if (existKey.isPresent()) {
-            IdempotencyKey key = existKey.get();
-
-            if (key.getStatus() == IdempotencyStatus.SUCCESS) {
-                Map<String, Object> responseBody = key.getResponseBody();
-                return ((Number) responseBody.get("userId")).longValue();
-            }
-
-            throw new IdempotencyException("이전 요청이 아직 처리 중입니다. 잠시 후 결과를 확인해주세요.");
-        }
-
+    public Long signup(CreateUserRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new DuplicateEmailException();
-        }
-
-        IdempotencyKey key = IdempotencyKey.builder()
-            .idempotencyKey(idempotencyKey)
-            .domain("USER")
-            .status(IdempotencyStatus.PENDING)
-            .build();
-
-        try {
-            key = idempotencyKeyRepository.saveAndFlush(key);
-        } catch (DataIntegrityViolationException e) {
-            throw new IdempotencyException("이전 요청이 아직 처리 중입니다. 잠시 후 결과를 확인해주세요.");
         }
 
         User user = User.builder()
@@ -111,10 +76,6 @@ public class UserService {
             .build();
 
         User savedUser = userRepository.save(user);
-        Map<String, Object> successData = new HashMap<>();
-        successData.put("userId", savedUser.getId());
-
-        key.success(201, successData);
 
         return savedUser.getId();
     }
