@@ -85,15 +85,16 @@ public interface UserApiDocs {
             )
         )
     })
+    @Parameter(
+        name = "Idempotency-Key",
+        description = "중복 요청 방지를 위한 멱등성 키",
+        required = true,
+        in = ParameterIn.HEADER,
+        schema = @Schema(type = "string", format = "uuid"),
+        example = "123e4567-e89b-12d3-a456-426614174000"
+    )
     @PostMapping
     ResponseEntity<com.rentify.rentify_api.common.response.ApiResponse<Void>> createUser(
-        @Parameter(
-            name = "Idempotency-Key",
-            description = "중복 요청 방지를 위한 멱등성 키",
-            required = true,
-            in = ParameterIn.HEADER,
-            example = "123e4567-e89b-12d3-a456-426614174000"
-        )
         @RequestBody(
             description = "회원가입 요청 데이터",
             required = true,
