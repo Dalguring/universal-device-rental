@@ -1,5 +1,6 @@
 package com.rentify.rentify_api.user.controller;
 
+import com.rentify.rentify_api.common.idempotency.Idempotent;
 import com.rentify.rentify_api.common.response.ApiResponse;
 import com.rentify.rentify_api.common.util.CookieUtil;
 import com.rentify.rentify_api.post.dto.PostDetailResponse;
@@ -14,7 +15,6 @@ import com.rentify.rentify_api.user.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.net.URI;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.annotations.ParameterObject;
@@ -29,7 +29,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -47,11 +46,11 @@ public class UserController implements UserApiDocs {
 
     @Override
     @PostMapping
+    @Idempotent
     public ResponseEntity<ApiResponse<Void>> createUser(
-        @RequestHeader(value = "Idempotency-Key") UUID idempotencyKey,
         @Valid @RequestBody CreateUserRequest request
     ) {
-        Long userId = userService.signup(idempotencyKey, request);
+        Long userId = userService.signup(request);
         URI location = URI.create("/api/users/" + userId);
 
         return ResponseEntity.created(location)

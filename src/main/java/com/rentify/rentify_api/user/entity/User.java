@@ -81,7 +81,7 @@ public class User {
         if (amount < 0) {
             throw new IllegalArgumentException("amount must be >= 0");
         }
-        this.point += point;
+        this.point += amount;
     }
 
     public void usePoint(int amount) {

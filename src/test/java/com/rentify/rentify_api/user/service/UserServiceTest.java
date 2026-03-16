@@ -10,12 +10,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.rentify.rentify_api.common.exception.DuplicateException;
-import com.rentify.rentify_api.common.exception.IdempotencyException;
 import com.rentify.rentify_api.common.exception.InvalidPasswordException;
 import com.rentify.rentify_api.common.exception.InvalidValueException;
-import com.rentify.rentify_api.common.idempotency.IdempotencyKey;
-import com.rentify.rentify_api.common.idempotency.IdempotencyKeyRepository;
-import com.rentify.rentify_api.common.idempotency.IdempotencyStatus;
 import com.rentify.rentify_api.user.dto.CreateUserRequest;
 import com.rentify.rentify_api.user.dto.PasswordUpdateRequest;
 import com.rentify.rentify_api.user.dto.UserUpdateRequest;
@@ -23,11 +19,7 @@ import com.rentify.rentify_api.user.entity.User;
 import com.rentify.rentify_api.user.exception.DuplicateEmailException;
 import com.rentify.rentify_api.user.exception.UserNotFoundException;
 import com.rentify.rentify_api.user.repository.UserRepository;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -46,18 +38,9 @@ class UserServiceTest {
     private UserRepository userRepository;
     @Spy
     private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-    @Mock
-    private IdempotencyKeyRepository idempotencyKeyRepository;
 
     @InjectMocks
     private UserService userService;
-
-    private UUID idempotencyKey;
-
-    @BeforeEach
-    void setUP() {
-        idempotencyKey = UUID.randomUUID();
-    }
 
     @Nested
     @DisplayName("회원가입 테스트 그룹")
@@ -73,75 +56,21 @@ class UserServiceTest {
                 .password("password123")
                 .build();
 
-            given(idempotencyKeyRepository.findById(idempotencyKey)).willReturn(Optional.empty());
             given(userRepository.existsByEmail(request.getEmail())).willReturn(false);
             given(passwordEncoder.encode(any())).willReturn("encodedPassword");
 
             User savedUser = User.builder().id(1L).email("test@test.com").build();
 
             given(userRepository.save(any(User.class))).willReturn(savedUser);
-            given(idempotencyKeyRepository.saveAndFlush(any(IdempotencyKey.class)))
-                .willAnswer(invocation -> invocation.getArgument(0));
 
             // when
-            Long userId = userService.signup(idempotencyKey, request);
+            Long userId = userService.signup(request);
 
             // then
             assertThat(userId).isEqualTo(1L);
 
             // verify
             verify(userRepository, times(1)).save(any(User.class));
-            verify(idempotencyKeyRepository, times(1)).saveAndFlush(any(IdempotencyKey.class));
-        }
-
-        @Test
-        @DisplayName("멱등성 확인: 이미 성공적으로 처리된 요청(키)이면 저장된 ID를 바로 반환한다.")
-        void signup_idempotency_success() {
-            // given
-            Map<String, Object> responseBody = new HashMap<>();
-            responseBody.put("userId", 100L);
-
-            IdempotencyKey existKey = IdempotencyKey.builder()
-                .idempotencyKey(idempotencyKey)
-                .status(IdempotencyStatus.SUCCESS)
-                .responseBody(responseBody)
-                .build();
-
-            CreateUserRequest request = CreateUserRequest.builder().build();
-
-            given(idempotencyKeyRepository.findById(idempotencyKey)).willReturn(Optional.of(existKey));
-
-            // when
-            Long userId = userService.signup(idempotencyKey, request);
-
-            // then
-            assertThat(userId).isEqualTo(100L);
-
-            // verify
-            verify(userRepository, times(0)).save(any());
-        }
-
-        @Test
-        @DisplayName("멱등성 예외: 이전 요청이 아직 처리 중이면 예외가 발생한다.")
-        void signup_idempotency_pending() {
-            // given
-            IdempotencyKey pendingKey = IdempotencyKey.builder()
-                .idempotencyKey(idempotencyKey)
-                .status(IdempotencyStatus.PENDING)
-                .build();
-
-            CreateUserRequest request = CreateUserRequest.builder().build();
-
-            given(idempotencyKeyRepository.findById(idempotencyKey)).willReturn(
-                Optional.of(pendingKey));
-
-            // when & then
-            assertThatThrownBy(() -> userService.signup(idempotencyKey, request))
-                .isInstanceOf(IdempotencyException.class)
-                .hasMessage("이전 요청이 아직 처리 중입니다. 잠시 후 결과를 확인해주세요.");
-
-            // verify
-            verify(userRepository, times(0)).save(any());
         }
 
         @Test
@@ -152,11 +81,10 @@ class UserServiceTest {
                 .email("test@test.com")
                 .build();
 
-            given(idempotencyKeyRepository.findById(idempotencyKey)).willReturn(Optional.empty());
             given(userRepository.existsByEmail(request.getEmail())).willReturn(true);
 
             // when & then
-            assertThatThrownBy(() -> userService.signup(idempotencyKey, request))
+            assertThatThrownBy(() -> userService.signup(request))
                 .isInstanceOf(DuplicateException.class)
                 .hasMessage("이미 가입된 이메일 주소입니다.");
 

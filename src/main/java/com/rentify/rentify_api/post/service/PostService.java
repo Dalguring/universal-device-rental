@@ -3,12 +3,8 @@ package com.rentify.rentify_api.post.service;
 import com.rentify.rentify_api.category.entity.Category;
 import com.rentify.rentify_api.category.exception.CategoryNotFoundException;
 import com.rentify.rentify_api.category.repository.CategoryRepository;
-import com.rentify.rentify_api.common.exception.IdempotencyException;
 import com.rentify.rentify_api.common.exception.InvalidValueException;
 import com.rentify.rentify_api.common.exception.NotFoundException;
-import com.rentify.rentify_api.common.idempotency.IdempotencyKey;
-import com.rentify.rentify_api.common.idempotency.IdempotencyKeyRepository;
-import com.rentify.rentify_api.common.idempotency.IdempotencyStatus;
 import com.rentify.rentify_api.image.service.ImageService;
 import com.rentify.rentify_api.post.dto.PostDetailResponse;
 import com.rentify.rentify_api.post.dto.PostFormRequest;
@@ -20,14 +16,9 @@ import com.rentify.rentify_api.post.repository.PostRepository;
 import com.rentify.rentify_api.user.entity.User;
 import com.rentify.rentify_api.user.exception.UserNotFoundException;
 import com.rentify.rentify_api.user.repository.UserRepository;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -40,7 +31,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class PostService {
 
-    private final IdempotencyKeyRepository idempotencyKeyRepository;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
@@ -85,71 +75,36 @@ public class PostService {
     }
 
     @Transactional
-    public Long createPost(UUID idempotencyKey, Long userId, PostFormRequest request) {
-        Optional<IdempotencyKey> existKey = idempotencyKeyRepository.findById(idempotencyKey);
+    public Long createPost(Long userId, PostFormRequest request) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(UserNotFoundException::new);
 
-        if (existKey.isPresent()) {
-            IdempotencyKey key = existKey.get();
+        Category category = categoryRepository.findById(request.getCategoryId())
+            .orElseThrow(CategoryNotFoundException::new);
 
-            if (key.getStatus() == IdempotencyStatus.SUCCESS) {
-                Map<String, Object> responseBody = key.getResponseBody();
-                return ((Number)responseBody.get("postId")).longValue();
-            }
-
-            throw new IdempotencyException("이전 게시글이 생성 중 입니다. 잠시 후 결과를 확인해주세요.");
-        }
-
-        IdempotencyKey key = IdempotencyKey.builder()
-            .idempotencyKey(idempotencyKey)
-            .domain("POST")
-            .status(IdempotencyStatus.PENDING)
+        Post post = Post.builder()
+            .user(user)
+            .category(category)
+            .title(request.getTitle())
+            .description(request.getDescription())
+            .pricePerDay(request.getPricePerDay())
+            .maxRentalDays(request.getMaxRentalDays())
+            .isParcel(request.getIsParcel())
+            .isMeetup(request.getIsMeetup())
+            .thumbnailUrl(request.getImageUrls().getFirst())
             .build();
 
-        try {
-            key = idempotencyKeyRepository.saveAndFlush(key);
-        } catch (DataIntegrityViolationException e) {
-            throw new IdempotencyException("이전 게시글이 생성 중 입니다. 잠시 후 결과를 확인해주세요.");
-        }
+        Post savedPost = postRepository.save(post);
+        postHistoryRepository.save(
+            PostHistory.builder()
+                .postId(savedPost.getId())
+                .afterValue(savedPost.toJson())
+                .build()
+        );
 
-        try {
-            User user = userRepository.findById(userId)
-                .orElseThrow(UserNotFoundException::new);
+        imageService.saveImages(savedPost, request.getImageUrls());
 
-            Category category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(CategoryNotFoundException::new);
-
-            Post post = Post.builder()
-                .user(user)
-                .category(category)
-                .title(request.getTitle())
-                .description(request.getDescription())
-                .pricePerDay(request.getPricePerDay())
-                .maxRentalDays(request.getMaxRentalDays())
-                .isParcel(request.getIsParcel())
-                .isMeetup(request.getIsMeetup())
-                .thumbnailUrl(request.getImageUrls().getFirst())
-                .build();
-
-            Post savedPost = postRepository.save(post);
-            postHistoryRepository.save(
-                PostHistory.builder()
-                    .postId(savedPost.getId())
-                    .afterValue(savedPost.toJson())
-                    .build()
-            );
-
-            imageService.saveImages(savedPost, request.getImageUrls());
-
-            Map<String, Object> successData = new HashMap<>();
-            successData.put("postId", savedPost.getId());
-
-            key.success(201, successData);
-
-            return savedPost.getId();
-        } catch (Exception e) {
-            key.fail();
-            throw e;
-        }
+        return savedPost.getId();
     }
 
     @Transactional
