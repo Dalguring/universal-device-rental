@@ -2,6 +2,7 @@ package com.rentify.rentify_api.common.aop;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.rentify.rentify_api.common.exception.IdempotencyException;
 import com.rentify.rentify_api.common.idempotency.IdempotencyKey;
 import com.rentify.rentify_api.common.idempotency.IdempotencyKeyRepository;
@@ -26,7 +27,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 public class IdempotencyAspect {
 
     private final IdempotencyKeyRepository idempotencyKeyRepository;
-    private final ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
     @Around("@annotation(com.rentify.rentify_api.common.idempotency.Idempotent)")
     public Object checkIdempotency(ProceedingJoinPoint joinPoint) throws Throwable {
