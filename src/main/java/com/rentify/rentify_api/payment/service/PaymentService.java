@@ -89,9 +89,11 @@ public class PaymentService {
             .payment(payment)
             .eventType(PaymentEventType.PAYMENT_CREATED)
             .build();
+
+        Payment savedPayment = paymentRepository.save(payment);
         paymentEventRepository.save(paymentEvent);
 
-        return paymentRepository.save(payment);
+        return savedPayment;
     }
 
     @Transactional
@@ -99,7 +101,7 @@ public class PaymentService {
         Payment payment = paymentRepository.findById(paymentId)
             .orElseThrow(PaymentNotFoundException::new);
 
-        Rental rental = rentalRepository.findByIdWithPessimisticLock(request.getRentalId())
+        Rental rental = rentalRepository.findByIdWithPessimisticLock(payment.getRental().getId())
             .orElseThrow(RentalNotFoundException::new);
 
         Post post = postRepository.findByIdWithPessimisticLock(rental.getPost().getId())
@@ -124,10 +126,8 @@ public class PaymentService {
             pointHistoryRepository.save(pointHistory);
         }
 
-        if (request.getUserCouponId() != null) {
-            UserCoupon userCoupon = userCouponRepository.findById(request.getUserCouponId())
-                .orElseThrow(CouponNotFoundException::new);
-            userCoupon.markAsUsed();
+        if (payment.getUserCoupon() != null) {
+            payment.getUserCoupon().markAsUsed();
         }
 
         rental.confirm();
