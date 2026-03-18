@@ -8,12 +8,19 @@ import com.rentify.rentify_api.coupon.exception.CouponAlreadyUsedException;
 import com.rentify.rentify_api.coupon.exception.CouponNotFoundException;
 import com.rentify.rentify_api.coupon.exception.CouponNotValidException;
 import com.rentify.rentify_api.coupon.repository.UserCouponRepository;
+import com.rentify.rentify_api.payment.dto.PaymentCompletedEvent;
 import com.rentify.rentify_api.payment.dto.PaymentRequest;
 import com.rentify.rentify_api.payment.entity.Payment;
+import com.rentify.rentify_api.payment.entity.PaymentEvent;
+import com.rentify.rentify_api.payment.entity.PaymentEventType;
 import com.rentify.rentify_api.payment.entity.PaymentFailReason;
 import com.rentify.rentify_api.payment.entity.PaymentStatus;
 import com.rentify.rentify_api.payment.exception.PaymentNotFoundException;
+import com.rentify.rentify_api.payment.repository.PaymentEventRepository;
 import com.rentify.rentify_api.payment.repository.PaymentRepository;
+import com.rentify.rentify_api.point.entity.PointHistory;
+import com.rentify.rentify_api.point.entity.PointHistoryType;
+import com.rentify.rentify_api.point.repository.PointHistoryRepository;
 import com.rentify.rentify_api.post.entity.Post;
 import com.rentify.rentify_api.post.entity.PostStatus;
 import com.rentify.rentify_api.post.exception.PostNotFoundException;
@@ -30,6 +37,7 @@ import com.rentify.rentify_api.user.repository.UserRepository;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,6 +52,9 @@ public class PaymentService {
     private final RentalRepository rentalRepository;
     private final UserCouponRepository userCouponRepository;
     private final PostRepository postRepository;
+    private final PaymentEventRepository paymentEventRepository;
+    private final ApplicationEventPublisher eventPublisher;
+    private final PointHistoryRepository pointHistoryRepository;
 
     @Transactional
     public Payment createPendingPayment(Long userId, PaymentRequest request) {
@@ -74,6 +85,12 @@ public class PaymentService {
             .status(PaymentStatus.PENDING)
             .build();
 
+        PaymentEvent paymentEvent = PaymentEvent.builder()
+            .payment(payment)
+            .eventType(PaymentEventType.PAYMENT_CREATED)
+            .build();
+        paymentEventRepository.save(paymentEvent);
+
         return paymentRepository.save(payment);
     }
 
@@ -95,6 +112,16 @@ public class PaymentService {
         if (request.getPointAmount() > 0) {
             User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
             user.usePoint(request.getPointAmount());
+
+            PointHistory pointHistory = PointHistory.builder()
+                .user(user)
+                .rental(rental)
+                .payment(payment)
+                .type(PointHistoryType.SPEND)
+                .amount(request.getPointAmount())
+                .finalBalance(user.getPoint())
+                .build();
+            pointHistoryRepository.save(pointHistory);
         }
 
         if (request.getUserCouponId() != null) {
@@ -106,6 +133,16 @@ public class PaymentService {
         rental.confirm();
         payment.updateAsPaid();
         post.markAsRented();
+
+        PaymentEvent paymentEvent = PaymentEvent.builder()
+            .payment(payment)
+            .eventType(PaymentEventType.PAYMENT_COMPLETED)
+            .build();
+        paymentEventRepository.save(paymentEvent);
+
+        eventPublisher.publishEvent(
+            new PaymentCompletedEvent(userId, paymentId, payment.getFinalAmount())
+        );
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -114,6 +151,12 @@ public class PaymentService {
             .orElseThrow(PaymentNotFoundException::new);
 
         payment.updateAsFailed(reason);
+
+        PaymentEvent paymentEvent = PaymentEvent.builder()
+            .payment(payment)
+            .eventType(PaymentEventType.PAYMENT_FAILED)
+            .build();
+        paymentEventRepository.save(paymentEvent);
     }
 
     public void getMyPayments() {
