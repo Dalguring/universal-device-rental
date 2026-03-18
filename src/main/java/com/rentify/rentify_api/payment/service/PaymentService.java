@@ -9,6 +9,15 @@ import com.rentify.rentify_api.coupon.exception.CouponNotFoundException;
 import com.rentify.rentify_api.coupon.exception.CouponNotValidException;
 import com.rentify.rentify_api.coupon.repository.UserCouponRepository;
 import com.rentify.rentify_api.payment.dto.PaymentRequest;
+import com.rentify.rentify_api.payment.entity.Payment;
+import com.rentify.rentify_api.payment.entity.PaymentFailReason;
+import com.rentify.rentify_api.payment.entity.PaymentStatus;
+import com.rentify.rentify_api.payment.exception.PaymentNotFoundException;
+import com.rentify.rentify_api.payment.repository.PaymentRepository;
+import com.rentify.rentify_api.post.entity.Post;
+import com.rentify.rentify_api.post.entity.PostStatus;
+import com.rentify.rentify_api.post.exception.PostNotFoundException;
+import com.rentify.rentify_api.post.repository.PostRepository;
 import com.rentify.rentify_api.rental.entity.Rental;
 import com.rentify.rentify_api.rental.entity.RentalStatus;
 import com.rentify.rentify_api.rental.exception.RentalNotAvailableException;
@@ -18,24 +27,26 @@ import com.rentify.rentify_api.user.entity.User;
 import com.rentify.rentify_api.user.exception.UnauthenticatedException;
 import com.rentify.rentify_api.user.exception.UserNotFoundException;
 import com.rentify.rentify_api.user.repository.UserRepository;
-import jakarta.validation.Valid;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional
 @Slf4j
 @RequiredArgsConstructor
 public class PaymentService {
 
+    private final PaymentRepository paymentRepository;
     private final UserRepository userRepository;
     private final RentalRepository rentalRepository;
     private final UserCouponRepository userCouponRepository;
+    private final PostRepository postRepository;
 
-    public Long requestPayment(Long userId, @Valid PaymentRequest request) {
+    @Transactional
+    public Payment createPendingPayment(Long userId, PaymentRequest request) {
         Rental rental = rentalRepository.findById(request.getRentalId())
             .orElseThrow(RentalNotFoundException::new);
         UserCoupon coupon = null;
@@ -45,20 +56,68 @@ public class PaymentService {
         if (request.getUserCouponId() != null) {
             coupon = userCouponRepository.findById(request.getUserCouponId())
                 .orElseThrow(CouponNotFoundException::new);
-
             validateCoupon(userId, coupon);
         }
-
         if (request.getPointAmount() > 0) {
             validatePoint(userId, request);
         }
-
         validatePaymentAmount(rental, coupon, request.getPointAmount(), request.getExpectedAmount());
 
-        return 0L;
+        Payment payment = Payment.builder()
+            .user(rental.getUser())
+            .rental(rental)
+            .userCoupon(coupon)
+            .totalAmount(rental.getTotalPrice())
+            .usedPoint(request.getPointAmount())
+            .couponDiscount(coupon != null ? coupon.getCoupon().getMaxDiscountAmount() : 0)
+            .finalAmount(request.getExpectedAmount())
+            .status(PaymentStatus.PENDING)
+            .build();
+
+        return paymentRepository.save(payment);
+    }
+
+    @Transactional
+    public void completePayment(Long paymentId, Long userId, PaymentRequest request) {
+        Payment payment = paymentRepository.findById(paymentId)
+            .orElseThrow(PaymentNotFoundException::new);
+
+        Rental rental = rentalRepository.findByIdWithPessimisticLock(request.getRentalId())
+            .orElseThrow(RentalNotFoundException::new);
+
+        Post post = postRepository.findByIdWithPessimisticLock(rental.getPost().getId())
+            .orElseThrow(PostNotFoundException::new);
+
+        if (post.getStatus() != PostStatus.AVAILABLE) {
+            throw new RentalNotAvailableException();
+        }
+
+        if (request.getPointAmount() > 0) {
+            User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+            user.usePoint(request.getPointAmount());
+        }
+
+        if (request.getUserCouponId() != null) {
+            UserCoupon userCoupon = userCouponRepository.findById(request.getUserCouponId())
+                .orElseThrow(CouponNotFoundException::new);
+            userCoupon.markAsUsed();
+        }
+
+        rental.confirm();
+        payment.updateAsPaid();
+        post.markAsRented();
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void failPayment(Long paymentId, PaymentFailReason reason) {
+        Payment payment = paymentRepository.findById(paymentId)
+            .orElseThrow(PaymentNotFoundException::new);
+
+        payment.updateAsFailed(reason);
     }
 
     public void getMyPayments() {
+
     }
 
     public void getMyPayment(String paymentId) {
@@ -75,7 +134,7 @@ public class PaymentService {
             throw new UnauthenticatedException("대여자와 결제 요청자가 일치하지 않습니다.");
         }
         if (!rental.getStatus().equals(RentalStatus.REQUESTED)) {
-            throw new RentalNotAvailableException("대여 불가능한 상태입니다.");
+            throw new RentalNotAvailableException();
         }
     }
 

@@ -3,6 +3,8 @@ package com.rentify.rentify_api.payment.controller;
 import com.rentify.rentify_api.common.idempotency.Idempotent;
 import com.rentify.rentify_api.common.response.ApiResponse;
 import com.rentify.rentify_api.payment.dto.PaymentRequest;
+import com.rentify.rentify_api.payment.dto.PaymentResponse;
+import com.rentify.rentify_api.payment.service.PaymentFacade;
 import com.rentify.rentify_api.payment.service.PaymentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,17 +23,22 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class PaymentController implements PaymentApiDocs {
 
+    private final PaymentFacade paymentFacade;
     private final PaymentService paymentService;
 
     @Override
     @Idempotent
     @PostMapping
-    public ResponseEntity<ApiResponse<Void>> requestPayment(
+    public ResponseEntity<ApiResponse<PaymentResponse>> requestPayment(
         @AuthenticationPrincipal Long userId,
         @Valid @RequestBody PaymentRequest request
     ) {
-        Long paymentId = paymentService.requestPayment(userId, request);
-        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK));
+        Long paymentId = paymentFacade.processPayment(userId, request);
+        return ResponseEntity.ok(ApiResponse.success(
+            HttpStatus.OK,
+            "결제가 완료되었습니다.",
+            new PaymentResponse(paymentId))
+        );
     }
 
     @GetMapping
