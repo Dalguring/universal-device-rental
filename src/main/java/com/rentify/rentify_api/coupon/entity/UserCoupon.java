@@ -1,5 +1,7 @@
 package com.rentify.rentify_api.coupon.entity;
 
+import com.rentify.rentify_api.coupon.exception.CouponAlreadyUsedException;
+import com.rentify.rentify_api.coupon.exception.CouponNotValidException;
 import com.rentify.rentify_api.user.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,6 +14,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -53,6 +56,11 @@ public class UserCoupon {
     @Column(name = "status", nullable = false, columnDefinition = "user_coupon_status")
     private UserCouponStatus status;
 
+    @Version
+    @Column(name = "coupon_version", nullable = false)
+    @Builder.Default
+    private Short couponVersion = (short) 0;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -60,4 +68,14 @@ public class UserCoupon {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    public void markAsUsed() {
+        if (this.status == UserCouponStatus.USED) {
+            throw new CouponAlreadyUsedException();
+        }
+        if (this.status == UserCouponStatus.EXPIRED) {
+            throw new CouponNotValidException();
+        }
+        this.status = UserCouponStatus.USED;
+    }
 }

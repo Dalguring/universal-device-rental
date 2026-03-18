@@ -72,8 +72,9 @@ public class Payment {
     @Builder.Default
     private Integer version = 0;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "fail_reason")
-    private String failReason;
+    private PaymentFailReason failReason;
 
     @Column(name = "paid_at")
     private LocalDateTime paidAt;
@@ -92,19 +93,30 @@ public class Payment {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updateAt;
 
-    private void updateAsPaid() {
+    public void updateAsPaid() {
+        if (this.status != PaymentStatus.PENDING) {
+            throw new IllegalStateException("결제 대기 상태에서만 완료 처리할 수 있습니다.");
+        }
         this.status = PaymentStatus.PAID;
+        this.paidAt = LocalDateTime.now();
     }
 
-    private void updateAsFailed() {
+    public void updateAsFailed(PaymentFailReason reason) {
         this.status = PaymentStatus.FAILED;
+        this.failReason = reason;
     }
 
-    private void updateAsCanceled() {
+    public void updateAsCanceled() {
+        if (this.status != PaymentStatus.PAID) {
+            throw new IllegalStateException("결제 완료 상태에서만 취소 가능합니다.");
+        }
         this.status = PaymentStatus.CANCELED;
     }
 
-    private void updateAsRefunded() {
+    public void updateAsRefunded() {
+        if (this.status != PaymentStatus.CANCELED) {
+            throw new IllegalStateException("결제 취소 상태에서만 환불 가능합니다.");
+        }
         this.status = PaymentStatus.REFUNDED;
     }
 }

@@ -3,16 +3,22 @@ package com.rentify.rentify_api.rental.repository;
 import com.rentify.rentify_api.rental.dto.RentalResponse;
 import com.rentify.rentify_api.rental.entity.Rental;
 import com.rentify.rentify_api.rental.entity.RentalStatus;
+import jakarta.persistence.LockModeType;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.time.LocalDate;
-import java.util.List;
-
 public interface RentalRepository extends JpaRepository<Rental, Long> {
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT r FROM Rental r WHERE r.id = :id")
+    Optional<Rental> findByIdWithPessimisticLock(@Param("id") Long id);
 
     @Query("SELECT r FROM Rental r WHERE r.post.id = :postId " +
            "AND r.status IN :statuses " +

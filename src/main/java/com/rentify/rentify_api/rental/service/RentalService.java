@@ -202,7 +202,7 @@ public class RentalService {
 
     // 내가 빌려준 대여 목록
     @Transactional(readOnly = true)
-    public Page<RentalResponse> getMyLendedRentals(Long userId, Pageable pageable) {
+    public Page<RentalResponse> getMyLentRentals(Long userId, Pageable pageable) {
         return rentalRepository.findByPostOwnerId(userId, pageable);
     }
 

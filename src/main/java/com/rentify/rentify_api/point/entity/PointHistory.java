@@ -1,9 +1,13 @@
-package com.rentify.rentify_api.payment.entity;
+package com.rentify.rentify_api.point.entity;
 
+import com.rentify.rentify_api.payment.entity.Payment;
+import com.rentify.rentify_api.rental.entity.Rental;
+import com.rentify.rentify_api.user.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -19,28 +23,39 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
-@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Getter
 @Builder
-@Table(name = "payment_events")
-public class PaymentEvent {
+@Table(name = "user_point_history")
+public class PointHistory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "event_id")
+    @Column(name = "history_id")
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "payment_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "rental_id")
+    private Rental rental;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "payment_id")
     private Payment payment;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "event_type", nullable = false)
-    private PaymentEventType eventType;
+    @Column(name = "type", nullable = false)
+    private PointHistoryType type;
 
-    @Column(name = "payload", columnDefinition = "TEXT")
-    private String payload;
+    @Column(name = "amount", nullable = false)
+    private Integer amount;
+
+    @Column(name = "final_balance", nullable = false)
+    private Integer finalBalance;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)

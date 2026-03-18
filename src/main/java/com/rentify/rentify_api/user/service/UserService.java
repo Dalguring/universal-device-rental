@@ -207,7 +207,7 @@ public class UserService {
 
         return switch (role.toLowerCase()) {
             case "borrower" -> rentalService.getMyBorrowedRentals(userId, pageable);
-            case "lender" -> rentalService.getMyLendedRentals(userId, pageable);
+            case "lender" -> rentalService.getMyLentRentals(userId, pageable);
             default -> throw new IllegalArgumentException("Invalid role parameter. Use 'borrower' or 'lender'");
         };
     }
