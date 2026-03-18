@@ -4,13 +4,13 @@ import com.rentify.rentify_api.category.entity.Category;
 import com.rentify.rentify_api.category.exception.CategoryNotFoundException;
 import com.rentify.rentify_api.category.repository.CategoryRepository;
 import com.rentify.rentify_api.common.exception.InvalidValueException;
-import com.rentify.rentify_api.common.exception.NotFoundException;
 import com.rentify.rentify_api.image.service.ImageService;
 import com.rentify.rentify_api.post.dto.PostDetailResponse;
 import com.rentify.rentify_api.post.dto.PostFormRequest;
 import com.rentify.rentify_api.post.entity.Post;
 import com.rentify.rentify_api.post.entity.PostHistory;
 import com.rentify.rentify_api.post.entity.PostStatus;
+import com.rentify.rentify_api.post.exception.PostNotFoundException;
 import com.rentify.rentify_api.post.repository.PostHistoryRepository;
 import com.rentify.rentify_api.post.repository.PostRepository;
 import com.rentify.rentify_api.user.entity.User;
@@ -69,7 +69,7 @@ public class PostService {
     @Transactional(readOnly = true)
     public PostDetailResponse getPost(Long postId) {
         Post post = postRepository.findById(postId)
-            .orElseThrow(() -> new NotFoundException("게시글을 찾을 수 없습니다."));
+            .orElseThrow(PostNotFoundException::new);
 
         return PostDetailResponse.from(post);
     }
@@ -110,7 +110,7 @@ public class PostService {
     @Transactional
     public Long updatePost(Long postId, Long userId, PostFormRequest request) {
         Post post = postRepository.findById(postId)
-            .orElseThrow(() -> new NotFoundException("게시글을 찾을 수 없습니다."));
+            .orElseThrow(PostNotFoundException::new);
 
         if (!post.getUser().getId().equals(userId)) {
             throw new AccessDeniedException("수정 권한이 없습니다.");

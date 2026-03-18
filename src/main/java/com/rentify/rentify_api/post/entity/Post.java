@@ -138,4 +138,8 @@ public class Post {
     public void updateStatus(PostStatus status) {
         this.status = status;
     }
+
+    public void markAsRented() {
+        this.status = PostStatus.RESERVED;
+    }
 }
