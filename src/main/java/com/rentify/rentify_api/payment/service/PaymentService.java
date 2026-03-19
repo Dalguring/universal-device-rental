@@ -9,6 +9,7 @@ import com.rentify.rentify_api.coupon.exception.CouponNotFoundException;
 import com.rentify.rentify_api.coupon.exception.CouponNotValidException;
 import com.rentify.rentify_api.coupon.repository.UserCouponRepository;
 import com.rentify.rentify_api.payment.dto.PaymentCompletedEvent;
+import com.rentify.rentify_api.payment.dto.PaymentDetailResponse;
 import com.rentify.rentify_api.payment.dto.PaymentRequest;
 import com.rentify.rentify_api.payment.entity.Payment;
 import com.rentify.rentify_api.payment.entity.PaymentEvent;
@@ -38,6 +39,8 @@ import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -159,16 +162,28 @@ public class PaymentService {
         paymentEventRepository.save(paymentEvent);
     }
 
-    public void getMyPayments() {
-
+    @Transactional(readOnly = true)
+    public Page<PaymentDetailResponse> getPaymentsInfo(Long userId, Pageable pageable) {
+        Page<Payment> payments = paymentRepository.findByUserId(userId, pageable);
+        return payments.map(PaymentDetailResponse::from);
     }
 
-    public void getMyPayment(String paymentId) {
+    @Transactional(readOnly = true)
+    public PaymentDetailResponse getPaymentInfo(Long userId, Long id) {
+        Payment payment = paymentRepository.findById(id)
+            .orElseThrow(PaymentNotFoundException::new);
+
+        if (!payment.getUser().getId().equals(userId)) {
+            throw new UnauthenticatedException("본인의 결제 내역 외에는 조회 불가능합니다.");
+        }
+
+        return PaymentDetailResponse.from(payment);
     }
 
-    public void cancelPayment(String paymentId) {
+    public void cancelPayment(Long userId, String paymentId) {
     }
 
+    @Transactional(readOnly = true)
     public void getPaymentEvents(String paymentId) {
     }
 
