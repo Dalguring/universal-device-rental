@@ -2,12 +2,17 @@ package com.rentify.rentify_api.payment.controller;
 
 import com.rentify.rentify_api.common.idempotency.Idempotent;
 import com.rentify.rentify_api.common.response.ApiResponse;
+import com.rentify.rentify_api.payment.dto.PaymentDetailResponse;
 import com.rentify.rentify_api.payment.dto.PaymentRequest;
 import com.rentify.rentify_api.payment.dto.PaymentResponse;
 import com.rentify.rentify_api.payment.service.PaymentFacade;
 import com.rentify.rentify_api.payment.service.PaymentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -41,21 +46,32 @@ public class PaymentController implements PaymentApiDocs {
         );
     }
 
+    @Override
     @GetMapping
-    public ResponseEntity<ApiResponse<Void>> getMyPayments() {
-        paymentService.getMyPayments();
-        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK));
+    public ResponseEntity<ApiResponse<Page<PaymentDetailResponse>>> getPaymentsInfo(
+        @AuthenticationPrincipal Long userId,
+        @PageableDefault(sort = "createAt", direction = Direction.DESC)Pageable pageable
+    ) {
+        Page<PaymentDetailResponse> paymentPage = paymentService.getPaymentsInfo(userId, pageable);
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, paymentPage));
     }
 
-    @GetMapping("/{paymentId}")
-    public ResponseEntity<ApiResponse<Void>> getMyPayment(@PathVariable String paymentId) {
-        paymentService.getMyPayment(paymentId);
-        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK));
+    @Override
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<PaymentDetailResponse>> getPaymentInfo(
+        @AuthenticationPrincipal Long userId,
+        @PathVariable Long id
+    ) {
+        PaymentDetailResponse response = paymentService.getPaymentInfo(userId, id);
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, response));
     }
 
     @PostMapping("/{paymentId}/cancel")
-    public ResponseEntity<ApiResponse<Void>> cancelPayment(@PathVariable String paymentId) {
-        paymentService.cancelPayment(paymentId);
+    public ResponseEntity<ApiResponse<Void>> cancelPayment(
+        @AuthenticationPrincipal Long userId,
+        @PathVariable String paymentId
+    ) {
+        paymentService.cancelPayment(userId, paymentId);
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK));
     }
 
