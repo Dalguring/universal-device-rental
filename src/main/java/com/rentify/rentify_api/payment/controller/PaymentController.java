@@ -7,6 +7,7 @@ import com.rentify.rentify_api.payment.dto.PaymentRequest;
 import com.rentify.rentify_api.payment.dto.PaymentResponse;
 import com.rentify.rentify_api.payment.service.PaymentFacade;
 import com.rentify.rentify_api.payment.service.PaymentService;
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -66,15 +67,21 @@ public class PaymentController implements PaymentApiDocs {
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, response));
     }
 
+    @Override
+    @Idempotent
     @PostMapping("/{id}/cancel")
     public ResponseEntity<ApiResponse<PaymentResponse>> cancelPayment(
         @AuthenticationPrincipal Long userId,
         @PathVariable Long id
     ) {
         Long paymentId = paymentFacade.processPaymentCancel(userId, id);
-        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, new PaymentResponse(paymentId)));
+        return ResponseEntity.ok(ApiResponse.success(
+            HttpStatus.OK,
+            "결제 취소가 완료되었습니다.",
+            new PaymentResponse(paymentId)));
     }
 
+    @Hidden
     @GetMapping("/{paymentId}/events")
     public ResponseEntity<ApiResponse<Void>> getPaymentEvents(@PathVariable Long paymentId) {
         paymentService.getPaymentEvents(paymentId);

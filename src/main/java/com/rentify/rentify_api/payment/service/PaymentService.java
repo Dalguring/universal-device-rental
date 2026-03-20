@@ -35,6 +35,7 @@ import com.rentify.rentify_api.user.entity.User;
 import com.rentify.rentify_api.user.exception.UnauthenticatedException;
 import com.rentify.rentify_api.user.exception.UserNotFoundException;
 import com.rentify.rentify_api.user.repository.UserRepository;
+import java.time.LocalDate;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -241,6 +242,7 @@ public class PaymentService {
     public void validatePaymentForCancel(Long userId, Long paymentId) {
         Payment payment = paymentRepository.findById(paymentId)
             .orElseThrow(PaymentNotFoundException::new);
+        Rental rental = payment.getRental();
 
         if (!payment.getUser().getId().equals(userId)) {
             throw new UnauthenticatedException("본인의 결제 건만 취소할 수 있습니다.");
@@ -248,6 +250,11 @@ public class PaymentService {
 
         if (payment.getStatus() != PaymentStatus.PAID) {
             throw new InvalidValueException("결제 완료 상태에서만 취소할 수 있습니다.");
+        }
+
+        if (LocalDate.now().isAfter(rental.getStartDate())
+            || LocalDate.now().isEqual(rental.getStartDate())) {
+            throw new InvalidValueException("대여 시작일 이후에는 결제를 취소할 수 없습니다.");
         }
     }
 

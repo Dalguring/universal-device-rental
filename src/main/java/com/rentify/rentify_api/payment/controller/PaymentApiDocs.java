@@ -29,7 +29,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface PaymentApiDocs {
 
     @Operation(summary = "결제요청", description = "<strong>멱등성 키(UUID) 헤더 필수</strong><br/>결제를 요청합니다."
-        + "<br/>pointAmount: 사용 포인트<br/>expectedAmount: 쿠폰 및 포인트 사용 후 프론트엔드 계산 결과 최종 결제금액")
+        + "<br/>pointAmount: 사용 포인트<br/>expectedAmount: 쿠폰 및 포인트 사용 후 프론트엔드 계산 결과 최종 결제금액"
+        + "<br/><strong>33% 확률로 실패할 수 있습니다.</strong>")
     @ApiResponses(value = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
@@ -294,7 +295,7 @@ public interface PaymentApiDocs {
                         {
                             "success": false,
                             "code": "401",
-                            "message": "본인의 결제 내역 외에는 조회 불가능합니다.",
+                            "message": "본인의 결제 건만 조회할 수 있습니다.",
                             "data": null
                         }
                         """
@@ -338,6 +339,99 @@ public interface PaymentApiDocs {
     })
     @GetMapping("/{id}")
     ResponseEntity<ApiResponse<PaymentDetailResponse>> getPaymentInfo(
+        @AuthenticationPrincipal Long userId,
+        @Parameter(
+            name = "id",
+            description = "결제 ID",
+            required = true,
+            in = ParameterIn.PATH,
+            example = "1"
+        )
+        @PathVariable Long id
+    );
+
+    @Operation(summary = "결제 취소 요청", description = "<strong>멱등성 키(UUID) 헤더 필수</strong><br/>결제 취소를 요청합니다."
+        + "<br/><strong>100% 확률로 성공</strong>")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "결제 취소 성공",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = """
+                        {
+                           "success": true,
+                           "code": "200",
+                           "message": "결제 취소가 완료되었습니다.",
+                           "data": {
+                               "paymentId": 1
+                           }
+                        }
+                        """
+                )
+            )
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "400",
+            description = "잘못된 요청",
+            content = @Content(
+                mediaType = "application/json",
+                examples = {
+                    @ExampleObject(
+                        name = "결제 완료 건 외 취소 불가",
+                        value = "{\"success\": false, \"code\": \"400\", \"message\": \"결제 완료 상태에서만 취소할 수 있습니다.\", \"data\": null}"
+                    ),
+                    @ExampleObject(
+                        name = "대여 시작일 이후 결제 취소 불가",
+                        value = "{\"success\": false, \"code\": \"400\", \"message\": \"대여 시작일 이후에는 결제를 취소할 수 없습니다.\", \"data\": null}"
+                    )
+                }
+            )
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "401",
+            description = "권한 없음",
+            content = @Content(
+                mediaType = "application/json",
+                examples =
+                @ExampleObject(
+                    name = "본인 결제 건 외 취소 불가",
+                    value = "{\"success\": false, \"code\": \"401\", \"message\": \"본인의 결제 건만 취소할 수 있습니다.\", \"data\": null}"
+                )
+            )
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "존재하지 않는 데이터",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    name = "존재하지 않는 결제 데이터",
+                    value = "{\"success\": false, \"code\": \"404\", \"message\": \"결제 내역이 없습니다.\", \"data\": null}"
+                )
+            )
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "500",
+            description = "서버 내부 오류",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = "{\"success\": false, \"code\": \"500\", \"message\": \"서버 내부 오류가 발생했습니다. 잠시 후 다시 시도해주세요.\", \"data\": null}"
+                )
+            )
+        )
+    })
+    @Parameter(
+        name = "Idempotency-Key",
+        description = "중복 요청 방지를 위한 멱등성 키",
+        required = true,
+        in = ParameterIn.HEADER,
+        schema = @Schema(type = "string", format = "uuid")
+    )
+    @PostMapping("/{id}/cancel")
+    ResponseEntity<ApiResponse<PaymentResponse>> cancelPayment(
         @AuthenticationPrincipal Long userId,
         @Parameter(
             name = "id",
