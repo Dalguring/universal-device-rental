@@ -27,7 +27,6 @@ public class PaymentDetailResponse {
     private PaymentFailReason failReason;
     private LocalDateTime paidAt;
     private LocalDateTime cancelAt;
-    private LocalDateTime refundAt;
     private LocalDateTime createAt;
 
     public static PaymentDetailResponse from(Payment payment) {
@@ -43,7 +42,6 @@ public class PaymentDetailResponse {
             .failReason(payment.getFailReason())
             .paidAt(payment.getPaidAt())
             .cancelAt(payment.getCancelAt())
-            .refundAt(payment.getRefundAt())
             .createAt(payment.getCreateAt())
             .build();
     }

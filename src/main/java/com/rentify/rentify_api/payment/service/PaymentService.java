@@ -35,6 +35,7 @@ import com.rentify.rentify_api.user.entity.User;
 import com.rentify.rentify_api.user.exception.UnauthenticatedException;
 import com.rentify.rentify_api.user.exception.UserNotFoundException;
 import com.rentify.rentify_api.user.repository.UserRepository;
+import java.time.LocalDate;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -169,22 +170,63 @@ public class PaymentService {
     }
 
     @Transactional(readOnly = true)
-    public PaymentDetailResponse getPaymentInfo(Long userId, Long id) {
-        Payment payment = paymentRepository.findById(id)
+    public PaymentDetailResponse getPaymentInfo(Long userId, Long paymentId) {
+        Payment payment = paymentRepository.findById(paymentId)
             .orElseThrow(PaymentNotFoundException::new);
 
         if (!payment.getUser().getId().equals(userId)) {
-            throw new UnauthenticatedException("본인의 결제 내역 외에는 조회 불가능합니다.");
+            throw new UnauthenticatedException("본인의 결제 건만 조회할 수 있습니다.");
         }
 
         return PaymentDetailResponse.from(payment);
     }
 
-    public void cancelPayment(Long userId, String paymentId) {
+    @Transactional
+    public void cancelPayment(Long paymentId) {
+        Payment payment = paymentRepository.findById(paymentId)
+            .orElseThrow(PaymentNotFoundException::new);
+
+        PaymentEvent refundRequest = PaymentEvent.builder()
+            .payment(payment)
+            .eventType(PaymentEventType.REFUND_REQUESTED)
+            .build();
+
+        paymentEventRepository.save(refundRequest);
+
+        payment.updateAsCanceled();
+        payment.getRental().cancel();
+        payment.getRental().getPost().updateStatus(PostStatus.AVAILABLE);
+
+        User user = payment.getUser();
+
+        if (payment.getUsedPoint() > 0) {
+            user.addPoint(payment.getUsedPoint());
+
+            PointHistory pointHistory = PointHistory.builder()
+                .user(user)
+                .rental(payment.getRental())
+                .payment(payment)
+                .type(PointHistoryType.REFUND)
+                .amount(payment.getUsedPoint())
+                .finalBalance(user.getPoint())
+                .build();
+            pointHistoryRepository.save(pointHistory);
+        }
+
+        if (payment.getUserCoupon() != null) {
+            payment.getUserCoupon().markAsAvailable();
+        }
+
+        PaymentEvent refundComplete = PaymentEvent.builder()
+            .payment(payment)
+            .eventType(PaymentEventType.REFUND_COMPLETED)
+            .build();
+
+        paymentEventRepository.save(refundComplete);
     }
 
     @Transactional(readOnly = true)
-    public void getPaymentEvents(String paymentId) {
+    public void getPaymentEvents(Long paymentId) {
     }
 
     private void validateRental(Long userId, Rental rental) {
@@ -193,6 +235,26 @@ public class PaymentService {
         }
         if (!rental.getStatus().equals(RentalStatus.REQUESTED)) {
             throw new RentalNotAvailableException();
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public void validatePaymentForCancel(Long userId, Long paymentId) {
+        Payment payment = paymentRepository.findById(paymentId)
+            .orElseThrow(PaymentNotFoundException::new);
+        Rental rental = payment.getRental();
+
+        if (!payment.getUser().getId().equals(userId)) {
+            throw new UnauthenticatedException("본인의 결제 건만 취소할 수 있습니다.");
+        }
+
+        if (payment.getStatus() != PaymentStatus.PAID) {
+            throw new InvalidValueException("결제 완료 상태에서만 취소할 수 있습니다.");
+        }
+
+        if (LocalDate.now().isAfter(rental.getStartDate())
+            || LocalDate.now().isEqual(rental.getStartDate())) {
+            throw new InvalidValueException("대여 시작일 이후에는 결제를 취소할 수 없습니다.");
         }
     }
 

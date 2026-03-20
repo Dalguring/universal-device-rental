@@ -47,4 +47,11 @@ public class PaymentFacade {
             throw e;
         }
     }
+
+    public Long processPaymentCancel(Long userId, Long paymentId) {
+        paymentService.validatePaymentForCancel(userId, paymentId);
+        mockPgClient.cancelPayment(paymentId);
+        paymentService.cancelPayment(paymentId);
+        return paymentId;
+    }
 }

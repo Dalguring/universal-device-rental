@@ -82,9 +82,6 @@ public class Payment {
     @Column(name = "canceled_at")
     private LocalDateTime cancelAt;
 
-    @Column(name = "refunded_at")
-    private LocalDateTime refundAt;
-
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createAt;
@@ -103,6 +100,7 @@ public class Payment {
 
     public void updateAsFailed(PaymentFailReason reason) {
         this.status = PaymentStatus.FAILED;
+        this.cancelAt = LocalDateTime.now();
         this.failReason = reason;
     }
 
@@ -110,13 +108,7 @@ public class Payment {
         if (this.status != PaymentStatus.PAID) {
             throw new IllegalStateException("결제 완료 상태에서만 취소 가능합니다.");
         }
+        this.cancelAt = LocalDateTime.now();
         this.status = PaymentStatus.CANCELED;
-    }
-
-    public void updateAsRefunded() {
-        if (this.status != PaymentStatus.CANCELED) {
-            throw new IllegalStateException("결제 취소 상태에서만 환불 가능합니다.");
-        }
-        this.status = PaymentStatus.REFUNDED;
     }
 }
