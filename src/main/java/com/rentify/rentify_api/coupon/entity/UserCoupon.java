@@ -78,4 +78,10 @@ public class UserCoupon {
         }
         this.status = UserCouponStatus.USED;
     }
+
+    public void markAsAvailable() {
+        if (this.coupon.getValidUntil().isAfter(LocalDateTime.now())) {
+            this.status = UserCouponStatus.AVAILABLE;
+        }
+    }
 }

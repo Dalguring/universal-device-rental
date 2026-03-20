@@ -66,17 +66,17 @@ public class PaymentController implements PaymentApiDocs {
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, response));
     }
 
-    @PostMapping("/{paymentId}/cancel")
-    public ResponseEntity<ApiResponse<Void>> cancelPayment(
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<ApiResponse<PaymentResponse>> cancelPayment(
         @AuthenticationPrincipal Long userId,
-        @PathVariable String paymentId
+        @PathVariable Long id
     ) {
-        paymentService.cancelPayment(userId, paymentId);
-        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK));
+        Long paymentId = paymentFacade.processPaymentCancel(userId, id);
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, new PaymentResponse(paymentId)));
     }
 
     @GetMapping("/{paymentId}/events")
-    public ResponseEntity<ApiResponse<Void>> getPaymentEvents(@PathVariable String paymentId) {
+    public ResponseEntity<ApiResponse<Void>> getPaymentEvents(@PathVariable Long paymentId) {
         paymentService.getPaymentEvents(paymentId);
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK));
     }
