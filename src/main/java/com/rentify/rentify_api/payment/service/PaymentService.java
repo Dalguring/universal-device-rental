@@ -190,7 +190,6 @@ public class PaymentService {
             .payment(payment)
             .eventType(PaymentEventType.REFUND_REQUESTED)
             .build();
-
         paymentEventRepository.save(refundRequest);
 
         payment.updateAsCanceled();
@@ -198,6 +197,23 @@ public class PaymentService {
         payment.getRental().getPost().updateStatus(PostStatus.AVAILABLE);
 
         User user = payment.getUser();
+
+        pointHistoryRepository.findByPaymentAndType(payment, PointHistoryType.EARN)
+            .ifPresent(earnHistory -> {
+                int earnedPoint = earnHistory.getAmount();
+
+                user.usePoint(earnedPoint);
+
+                PointHistory reclaimHistory = PointHistory.builder()
+                    .user(user)
+                    .rental(payment.getRental())
+                    .payment(payment)
+                    .type(PointHistoryType.ADJUST)
+                    .amount(earnedPoint)
+                    .finalBalance(user.getPoint())
+                    .build();
+                pointHistoryRepository.save(reclaimHistory);
+            });
 
         if (payment.getUsedPoint() > 0) {
             user.addPoint(payment.getUsedPoint());
@@ -221,7 +237,6 @@ public class PaymentService {
             .payment(payment)
             .eventType(PaymentEventType.REFUND_COMPLETED)
             .build();
-
         paymentEventRepository.save(refundComplete);
     }
 
