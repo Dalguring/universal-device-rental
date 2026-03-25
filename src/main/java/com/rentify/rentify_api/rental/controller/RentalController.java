@@ -29,16 +29,6 @@ public class RentalController implements RentalApiDocs {
     }
 
     @Override
-    @PatchMapping("/{rentalId}/confirm")
-    public ResponseEntity<ApiResponse<RentalResponse>> confirmRental(
-        @AuthenticationPrincipal Long userId,
-        @PathVariable Long rentalId
-    ) {
-        RentalResponse response = rentalService.confirmRental(userId, rentalId);
-        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, response));
-    }
-
-    @Override
     @PatchMapping("/{rentalId}/cancel")
     public ResponseEntity<ApiResponse<RentalResponse>> cancelRental(
         @AuthenticationPrincipal Long userId,
