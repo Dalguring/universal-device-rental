@@ -145,29 +145,6 @@ public class RentalService {
     }
 
     @Transactional
-    public RentalResponse confirmRental(Long userId, Long rentalId) {
-        // 대여 정보 조회
-        Rental rental = rentalRepository.findById(rentalId)
-            .orElseThrow(RentalNotFoundException::new);
-
-        // 본인 확인
-        if (!rental.getUser().getId().equals(userId)) {
-            throw new RentalNotAvailableException("본인의 대여만 확정할 수 있습니다.");
-        }
-
-        // TODO: 결제 처리 로직 (추후 구현)
-        // Payment payment = paymentService.processPayment(rental);
-
-        // 대여 확정
-        rental.confirm();
-
-        // 게시글 상태를 RESERVED로 변경
-        rental.getPost().updateStatus(PostStatus.RESERVED);
-
-        return convertToResponse(rental);
-    }
-
-    @Transactional
     public RentalResponse cancelRental(Long userId, Long rentalId) {
         // 대여 정보 조회
         Rental rental = rentalRepository.findById(rentalId)
@@ -177,11 +154,6 @@ public class RentalService {
         if (!rental.getUser().getId().equals(userId)) {
             throw new RentalNotAvailableException("본인의 대여만 취소할 수 있습니다.");
         }
-
-        // TODO: 결제 취소 로직 (추후 구현)
-        // if (rental.getStatus() == RentalStatus.CONFIRMED) {
-        //     paymentService.refundPayment(rental);
-        // }
 
         // 대여 취소
         rental.cancel();
