@@ -363,7 +363,7 @@ public interface UserApiDocs {
                 schema = @Schema(implementation = Page.class),
                 examples = @ExampleObject(
                     value = """
-                        
+                        {
                           "success": true,
                           "code": "200",
                           "message": "요청이 성공적으로 처리되었습니다.",
