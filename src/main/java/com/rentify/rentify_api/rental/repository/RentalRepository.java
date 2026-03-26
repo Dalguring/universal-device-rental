@@ -1,6 +1,5 @@
 package com.rentify.rentify_api.rental.repository;
 
-import com.rentify.rentify_api.rental.dto.RentalResponse;
 import com.rentify.rentify_api.rental.entity.Rental;
 import com.rentify.rentify_api.rental.entity.RentalStatus;
 import jakarta.persistence.LockModeType;
@@ -32,31 +31,40 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
 
     // 내가 빌린 대여 목록
     @Query(
-            value = "SELECT r FROM Rental r " +
-                    "JOIN FETCH r.post p " +
-                    "JOIN FETCH p.user u " +
-                    "WHERE r.user.id = :userId " +
-                    "ORDER BY r.createdAt DESC ",
-            countQuery = "SELECT count(r) FROM Rental r WHERE r.user.id = :userId"
-    ) Page<RentalResponse> findByUserId(@Param("userId") Long userId, Pageable pageable);
+        value = "SELECT r, p FROM Rental r " +
+                "JOIN FETCH r.post po " +
+                "JOIN FETCH po.user u " +
+                "LEFT JOIN Payment p ON p.rental = r " +
+                "AND p.id = (SELECT MAX(p2.id) FROM Payment p2 WHERE p2.rental = r) " +
+                "WHERE r.user.id = :userId " +
+                "ORDER BY r.createdAt DESC ",
+        countQuery = "SELECT count(r) FROM Rental r WHERE r.user.id = :userId"
+    )
+    Page<Object[]> findByUserId(@Param("userId") Long userId, Pageable pageable);
 
     // 내가 빌려준 대여 목록
     @Query(
-            value = "SELECT r FROM Rental r " +
-                    "JOIN FETCH r.post p " +
-                    "JOIN FETCH p.user u " +
-                    "WHERE p.user.id = :userId " +
-                    "ORDER BY r.createdAt DESC ",
-            countQuery = "SELECT count(r) FROM Rental r JOIN r.post p WHERE p.user.id = :userId"
-    ) Page<RentalResponse> findByPostOwnerId(@Param("userId") Long userId, Pageable pageable);
+        value = "SELECT r, p FROM Rental r " +
+                "JOIN FETCH r.post po " +
+                "JOIN FETCH po.user u " +
+                "LEFT JOIN Payment p ON p.rental = r " +
+                "AND p.id = (SELECT MAX(p2.id) FROM Payment p2 WHERE p2.rental = r) " +
+                "WHERE po.user.id = :userId " +
+                "ORDER BY r.createdAt DESC ",
+        countQuery = "SELECT count(r) FROM Rental r JOIN r.post po WHERE po.user.id = :userId"
+    )
+    Page<Object[]> findByPostOwnerId(@Param("userId") Long userId, Pageable pageable);
 
     // 나의 모든 대여 목록
     @Query(
-            value = "SELECT r FROM Rental r " +
-                    "JOIN FETCH r.post p " +
-                    "JOIN FETCH p.user u " +
-                    "WHERE r.user.id = :userId OR p.user.id = :userId " +
-                    "ORDER BY r.createdAt DESC ",
-            countQuery = "SELECT count(r) FROM Rental r JOIN r.post p WHERE r.user.id = :userId OR p.user.id = :userId"
-    ) Page<RentalResponse> findByUserIdOrPostOwnerId(@Param("userId") Long userId, Pageable pageable);
+        value = "SELECT r, p FROM Rental r " +
+                "JOIN FETCH r.post po " +
+                "JOIN FETCH po.user u " +
+                "LEFT JOIN Payment p ON p.rental = r " +
+                "AND p.id = (SELECT MAX(p2.id) FROM Payment p2 WHERE p2.rental = r) " +
+                "WHERE r.user.id = :userId OR po.user.id = :userId " +
+                "ORDER BY r.createdAt DESC ",
+        countQuery = "SELECT count(r) FROM Rental r JOIN r.post po WHERE r.user.id = :userId OR po.user.id = :userId"
+    )
+    Page<Object[]> findByUserIdOrPostOwnerId(@Param("userId") Long userId, Pageable pageable);
 }
