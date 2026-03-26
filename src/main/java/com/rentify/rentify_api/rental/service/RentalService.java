@@ -1,6 +1,7 @@
 package com.rentify.rentify_api.rental.service;
 
 import com.rentify.rentify_api.common.exception.NotFoundException;
+import com.rentify.rentify_api.payment.entity.Payment;
 import com.rentify.rentify_api.post.entity.Post;
 import com.rentify.rentify_api.post.entity.PostStatus;
 import com.rentify.rentify_api.post.repository.PostRepository;
@@ -134,11 +135,16 @@ public class RentalService {
             .rentalId(rental.getId())
             .userId(rental.getUser().getId())
             .postId(rental.getPost().getId())
+            .postStatus(rental.getPost().getStatus())
+            .lenderName(rental.getPost().getUser().getName())
+            .thumbnailUrl(rental.getPost().getThumbnailUrl())
+            .title(rental.getPost().getTitle())
             .startDate(rental.getStartDate())
             .endDate(rental.getEndDate())
             .receiveMethod(rental.getReceiveMethod())
-            .status(rental.getStatus())
+            .rentalStatus(rental.getStatus())
             .totalPrice(rental.getTotalPrice())
+            .canPay(true)
             .createdAt(rental.getCreatedAt())
             .updatedAt(rental.getUpdatedAt())
             .build();
@@ -169,18 +175,30 @@ public class RentalService {
     // 내가 빌리는 대여 목록
     @Transactional(readOnly = true)
     public Page<RentalResponse> getMyBorrowedRentals(Long userId, Pageable pageable) {
-        return rentalRepository.findByUserId(userId, pageable);
+        Page<Object[]> page = rentalRepository.findByUserId(userId, pageable);
+        return mapToRentalResponsePage(page);
     }
 
     // 내가 빌려준 대여 목록
     @Transactional(readOnly = true)
     public Page<RentalResponse> getMyLentRentals(Long userId, Pageable pageable) {
-        return rentalRepository.findByPostOwnerId(userId, pageable);
+        Page<Object[]> page = rentalRepository.findByPostOwnerId(userId, pageable);
+        return mapToRentalResponsePage(page);
     }
 
     // 나의 모든 대여 목록
     @Transactional(readOnly = true)
     public Page<RentalResponse> getMyAllRentals(Long userId, Pageable pageable) {
-        return rentalRepository.findByUserIdOrPostOwnerId(userId, pageable);
+        Page<Object[]> page = rentalRepository.findByUserIdOrPostOwnerId(userId, pageable);
+        return mapToRentalResponsePage(page);
+    }
+
+    private Page<RentalResponse> mapToRentalResponsePage(Page<Object[]> results) {
+        return results.map(row -> {
+            Rental rental = (Rental) row[0];
+            Payment payment = (Payment) row[1];
+
+            return RentalResponse.of(rental, payment);
+        });
     }
 }

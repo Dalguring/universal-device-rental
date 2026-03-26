@@ -363,33 +363,55 @@ public interface UserApiDocs {
                 schema = @Schema(implementation = Page.class),
                 examples = @ExampleObject(
                     value = """
-                        {
+                        
                           "success": true,
                           "code": "200",
-                          "message": "OK",
+                          "message": "요청이 성공적으로 처리되었습니다.",
                           "data": {
                             "content": [
                               {
-                                "rentalId": 15,
-                                "userId": 2,
-                                "borrowerName": "김빌림",
-                                "postId": 1,
-                                "title": "갤럭시 S25엣지 대여",
-                                "lenderName": "이대여",
-                                "startDate": "2026-02-25",
-                                "endDate": "2026-02-28",
-                                "receiveMethod": "PARCEL",
-                                "status": "IN_PROGRESS",
-                                "thumbnailUrl": "http://unirental.duckdns.org/images/b4485ceb-3e18-4883-bb67-7f29d5f1b805.jpg",
-                                "totalPrice": 156000,
-                                "createdAt": "2026-02-20T14:30:00.123456",
-                                "updatedAt": "2026-02-21T09:15:00.654321"
+                                "canCancel": false,
+                                "canPay": true,
+                                "createdAt": "2026-03-26T10:07:22.185514",
+                                "endDate": "2026-04-01",
+                                "lenderName": "서성민굴",
+                                "paymentId": 22,
+                                "postId": 11,
+                                "postStatus": "AVAILABLE",
+                                "receiveMethod": "MEETUP",
+                                "rentalId": 58,
+                                "rentalStatus": "REQUESTED",
+                                "startDate": "2026-03-31",
+                                "thumbnailUrl": "http://unirental.duckdns.org/images/8b8c4085-dbbf-49a4-9f40-2d89127cd237.jpg",
+                                "title": "갤럭시 울트라 s25 테스트2",
+                                "totalPrice": 60000,
+                                "updatedAt": "2026-03-26T10:07:22.185543",
+                                "userId": 13
+                              },
+                              {
+                                "canCancel": false,
+                                "canPay": false,
+                                "createdAt": "2026-03-26T10:06:29.137002",
+                                "endDate": "2026-03-31",
+                                "lenderName": "서성민굴",
+                                "paymentId": 21,
+                                "postId": 11,
+                                "postStatus": "AVAILABLE",
+                                "receiveMethod": "MEETUP",
+                                "rentalId": 57,
+                                "rentalStatus": "CANCELED",
+                                "startDate": "2026-03-31",
+                                "thumbnailUrl": "http://unirental.duckdns.org/images/8b8c4085-dbbf-49a4-9f40-2d89127cd237.jpg",
+                                "title": "갤럭시 울트라 s25 테스트2",
+                                "totalPrice": 30000,
+                                "updatedAt": "2026-03-26T10:06:44.959271",
+                                "userId": 13
                               }
                             ],
                             "page": {
                               "size": 20,
                               "number": 0,
-                              "totalElements": 10,
+                              "totalElements": 2,
                               "totalPages": 1
                             }
                           }

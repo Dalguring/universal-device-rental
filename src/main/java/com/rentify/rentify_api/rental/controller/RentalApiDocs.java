@@ -38,22 +38,29 @@ public interface RentalApiDocs {
                 examples = @ExampleObject(
                     value = """
                         {
-                            "success": true,
-                            "code": "SUCCESS",
-                            "message": "요청이 성공적으로 처리되었습니다.",
-                            "data": {
-                                "rentalId": 1,
-                                "userId": 1,
-                                "postId": 5,
-                                "startDate": "2026-02-10",
-                                "endDate": "2026-02-15",
-                                "receiveMethod": "PARCEL",
-                                "status": "REQUESTED",
-                                "totalPrice": 250000,
-                                "createdAt": "2026-02-08T10:30:00",
-                                "updatedAt": "2026-02-08T10:30:00"
-                            }
-                        }
+                           "success": true,
+                           "code": "201",
+                           "message": "요청이 성공적으로 처리되었습니다.",
+                           "data": {
+                             "canCancel": false,
+                             "canPay": true,
+                             "createdAt": "2026-03-26T09:38:43.976371",
+                             "endDate": "2026-05-15",
+                             "lenderName": "서성민굴",
+                             "paymentId": null,
+                             "postId": 13,
+                             "postStatus": "AVAILABLE",
+                             "receiveMethod": "PARCEL",
+                             "rentalId": 48,
+                             "rentalStatus": "REQUESTED",
+                             "startDate": "2026-05-10",
+                             "thumbnailUrl": "http://unirental.duckdns.org/images/885bf9e2-3440-4c22-a6b7-138bd24bb27c.jpg",
+                             "title": "갤럭시 s25 울트라 테스트121",
+                             "totalPrice": 210000,
+                             "updatedAt": "2026-03-26T09:38:43.976371",
+                             "userId": 13
+                           }
+                         }
                         """
                 )
             )
