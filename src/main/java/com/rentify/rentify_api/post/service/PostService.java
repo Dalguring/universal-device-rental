@@ -19,6 +19,8 @@ import com.rentify.rentify_api.user.repository.UserRepository;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -66,6 +68,7 @@ public class PostService {
         return posts.map(PostDetailResponse::from);
     }
 
+    @Cacheable(value = "posts", key = "#postId")
     @Transactional(readOnly = true)
     public PostDetailResponse getPost(Long postId) {
         Post post = postRepository.findById(postId)
@@ -107,6 +110,7 @@ public class PostService {
         return savedPost.getId();
     }
 
+    @CacheEvict(value = "posts", key = "#postId")
     @Transactional
     public Long updatePost(Long postId, Long userId, PostFormRequest request) {
         Post post = postRepository.findById(postId)
