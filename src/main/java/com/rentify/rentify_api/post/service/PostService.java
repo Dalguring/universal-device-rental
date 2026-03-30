@@ -13,9 +13,14 @@ import com.rentify.rentify_api.post.entity.PostStatus;
 import com.rentify.rentify_api.post.exception.PostNotFoundException;
 import com.rentify.rentify_api.post.repository.PostHistoryRepository;
 import com.rentify.rentify_api.post.repository.PostRepository;
+import com.rentify.rentify_api.rental.entity.Rental;
+import com.rentify.rentify_api.rental.repository.RentalRepository;
 import com.rentify.rentify_api.user.entity.User;
 import com.rentify.rentify_api.user.exception.UserNotFoundException;
 import com.rentify.rentify_api.user.repository.UserRepository;
+
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +47,7 @@ public class PostService {
     private static final Set<String> ALLOWED_SORT_FILTERS = Set.of(
         "createAt", "pricePerDay", "title", "id"
     );
+    private final RentalRepository rentalRepository;
 
     @Transactional(readOnly = true)
     public Page<PostDetailResponse> getPosts(
@@ -74,7 +80,11 @@ public class PostService {
         Post post = postRepository.findById(postId)
             .orElseThrow(PostNotFoundException::new);
 
-        return PostDetailResponse.from(post);
+        // 현재 게시글에 적용되어있는 rental 조회
+        List<Rental> rentals = rentalRepository
+                .findFutureRentalsByPostId(postId, LocalDate.now());
+
+        return PostDetailResponse.from(post, rentals);
     }
 
     @Transactional
