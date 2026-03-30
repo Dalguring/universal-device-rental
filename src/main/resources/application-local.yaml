@@ -16,6 +16,9 @@ spring:
       keepalive-time: 300000
       max-lifetime: 1740000
 
+  cache:
+    type: simple
+
   security:
     oauth2:
       client:

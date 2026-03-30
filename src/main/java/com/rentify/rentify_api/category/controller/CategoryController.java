@@ -21,7 +21,6 @@ public class CategoryController implements CategoryApiDocs {
 
     @Override
     @GetMapping
-    // TODO: cache 처리
     public ResponseEntity<ApiResponse<CategoryResponse>> getCategory() {
         List<CategoryInfo> categoryInfos = categoryService.getCategory();
         return ResponseEntity.ok(

@@ -16,6 +16,14 @@ spring:
       keepalive-time: 300000
       max-lifetime: 1740000
 
+  cache:
+    type: redis
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      password: ${SPRING_DATA_REDIS_PASSWORD}
+
   security:
     oauth2:
       client:
