@@ -35,7 +35,7 @@ public interface AuthApiDocs {
                 mediaType = "application/json",
                 schema = @Schema(implementation = com.rentify.rentify_api.common.response.ApiResponse.class),
                 examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
-                    value = "{\"success\": true, \"code\": \"200\", \"message\": \"요청이 성공적으로 처리되었습니다.\", \"data\": {\"userId\": 1, \"email\": \"user@example.com\", \"name\": \"홍길동\", \"point\": \"300\"}}"
+                    value = "{\"success\": true, \"code\": \"200\", \"message\": \"요청이 성공적으로 처리되었습니다.\", \"data\": {\"userId\": 1, \"email\": \"user@example.com\", \"name\": \"홍길동\", \"point\": \"300\" , \"address\": \"서울 ㅇㅇ구 ㅇㅇ로\" , \"postCount\": \"3\", \"rentalCount\": \"1\"  }}"
                 )
             )
         ),

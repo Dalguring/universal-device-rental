@@ -3,6 +3,8 @@ package com.rentify.rentify_api.user.service;
 import com.rentify.rentify_api.common.exception.DuplicateException;
 import com.rentify.rentify_api.common.exception.InvalidValueException;
 import com.rentify.rentify_api.common.exception.NotFoundException;
+import com.rentify.rentify_api.post.repository.PostRepository;
+import com.rentify.rentify_api.rental.repository.RentalRepository;
 import com.rentify.rentify_api.user.dto.AuthMeResponse;
 import com.rentify.rentify_api.user.entity.EmailVerification;
 import com.rentify.rentify_api.user.entity.User;
@@ -19,6 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final PostRepository postRepository;
+    private final RentalRepository rentalRepository;
     private final EmailVerificationRepository emailVerificationRepository;
     private final MailService mailService;
 
@@ -28,7 +32,10 @@ public class AuthService {
         User user = userRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
 
-        return AuthMeResponse.from(user);
+        Long postCount = postRepository.countByUserId(userId);
+        Long rentalCount = rentalRepository.countByUserId(userId);
+
+        return AuthMeResponse.from(user, postCount, rentalCount);
     }
 
     @Transactional

@@ -254,4 +254,10 @@ public class UserService {
             user.updateAccount(request.getAccount());
         }
     }
+
+    @Transactional(readOnly = true)
+    public String getMyPoints(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+        return user.getPoint().toString();
+    }
 }

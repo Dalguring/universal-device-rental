@@ -589,4 +589,52 @@ public interface UserApiDocs {
         )
         @Valid @org.springframework.web.bind.annotation.RequestBody UserUpdateRequest request
     );
+
+    @Operation(
+            summary = "내 포인트 조회",
+            description = "로그인한 사용자가 현재 보유한 포인트를 조회합니다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "포인트 조회 성공",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = """
+                    {
+                      "success": true,
+                      "code": "200",
+                      "message": "요청이 성공적으로 처리되었습니다.",
+                      "data": "5000"
+                    }
+                    """
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "인증 실패 (로그인 필요)",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"success\": false, \"code\": \"401\", \"message\": \"인증이 필요합니다.\", \"data\": null}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "존재하지 않는 사용자",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"success\": false, \"code\": \"404\", \"message\": \"존재하지 않는 사용자입니다.\", \"data\": null}"
+                            )
+                    )
+            )
+    })
+    @PatchMapping("/me/points")
+    public ResponseEntity<com.rentify.rentify_api.common.response.ApiResponse<Void>> getMyPoints(
+            @Parameter(hidden = true) @AuthenticationPrincipal Long userId
+    );
 }
