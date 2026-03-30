@@ -47,6 +47,8 @@ class PostServiceTest {
     @Mock
     private UserRepository userRepository;
     @Mock
+    private RentalRepository rentalRepository;
+    @Mock
     private CategoryRepository categoryRepository;
     @Mock
     private ImageService imageService;
@@ -179,7 +181,8 @@ class PostServiceTest {
             .build();
 
         given(postRepository.findById(postId)).willReturn(Optional.of(mockPost));
-
+        given(rentalRepository.findFutureRentalsByPostId(postId, LocalDate.now()))
+                .willReturn(List.of());
         // when
         PostDetailResponse response = postService.getPost(postId);
 
@@ -194,6 +197,7 @@ class PostServiceTest {
             "http://test.com/1.jpg",
             "http://test.com/2.jpg"
         );
+        assertThat(response.getRentalPeriods()).isNotNull();
 
         // verify
         verify(postRepository, times(1)).findById(any());
