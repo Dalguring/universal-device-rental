@@ -19,12 +19,14 @@ import com.rentify.rentify_api.post.dto.PostFormRequest;
 import com.rentify.rentify_api.post.entity.Post;
 import com.rentify.rentify_api.post.repository.PostHistoryRepository;
 import com.rentify.rentify_api.post.repository.PostRepository;
+import com.rentify.rentify_api.rental.repository.RentalRepository;
 import com.rentify.rentify_api.user.entity.User;
 import com.rentify.rentify_api.user.exception.UserNotFoundException;
 import com.rentify.rentify_api.user.repository.UserRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -46,6 +48,8 @@ class PostServiceTest {
     private PostRepository postRepository;
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private RentalRepository rentalRepository;
     @Mock
     private CategoryRepository categoryRepository;
     @Mock
@@ -179,7 +183,8 @@ class PostServiceTest {
             .build();
 
         given(postRepository.findById(postId)).willReturn(Optional.of(mockPost));
-
+        given(rentalRepository.findFutureRentalsByPostId(postId, LocalDate.now()))
+                .willReturn(List.of());
         // when
         PostDetailResponse response = postService.getPost(postId);
 
@@ -194,6 +199,7 @@ class PostServiceTest {
             "http://test.com/1.jpg",
             "http://test.com/2.jpg"
         );
+        assertThat(response.getRentalPeriods()).isNotNull();
 
         // verify
         verify(postRepository, times(1)).findById(any());

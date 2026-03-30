@@ -67,4 +67,37 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
         countQuery = "SELECT count(r) FROM Rental r JOIN r.post po WHERE r.user.id = :userId OR po.user.id = :userId"
     )
     Page<Object[]> findByUserIdOrPostOwnerId(@Param("userId") Long userId, Pageable pageable);
+
+    /**
+     * 특정 Post의 현재 또는 미래 rental 데이터를 조회합니다.
+     * 종료일이 오늘 이상인 rentals만 반환합니다.
+     */
+    @Query("SELECT r FROM Rental r " +
+            "WHERE r.post.id = :postId " +
+            "AND r.endDate >= :today " +
+            "AND r.status IN ('REQUESTED', 'CONFIRMED') " +
+            "ORDER BY r.startDate ASC")
+    List<Rental> findFutureRentalsByPostId(
+            @Param("postId") Long postId,
+            @Param("today") LocalDate today
+    );
+
+    /**
+     * 특정 Post의 모든 rental 데이터를 조회합니다.
+     */
+    List<Rental> findByPostId(Long postId);
+
+    /**
+     * 특정 기간 동안의 rental 데이터를 조회합니다.
+     * (예약이 겹치는 날짜 확인 등에 사용)
+     */
+    @Query("SELECT r FROM Rental r " +
+            "WHERE r.post.id = :postId " +
+            "AND r.startDate <= :endDate " +
+            "AND r.endDate >= :startDate")
+    List<Rental> findOverlappingRentals(
+            @Param("postId") Long postId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
 }
