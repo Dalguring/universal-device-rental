@@ -148,4 +148,13 @@ public class UserController implements UserApiDocs {
         userService.updateUserinfo(userId, request);
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, "회원정보 수정 성공"));
     }
+
+    @Override
+    @PatchMapping("/me/points")
+    public ResponseEntity<ApiResponse<Void>> getMyPoints(
+            @AuthenticationPrincipal Long userId
+    ) {
+        String point = userService.getMyPoints(userId);
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, point));
+    }
 }

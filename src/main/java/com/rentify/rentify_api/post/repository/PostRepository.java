@@ -48,4 +48,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT p FROM Post p WHERE p.id = :id")
     Optional<Post> findByIdWithPessimisticLock(@Param("id") Long id);
+
+    @Query("SELECT COUNT(p) FROM Post p WHERE p.user.id = :userId")
+    Long countByUserId(@Param("userId") Long userId);
 }

@@ -100,4 +100,7 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate
     );
+
+    @Query("SELECT COUNT(r) FROM Rental r WHERE r.user.id = :userId")
+    Long countByUserId(@Param("userId") Long userId);
 }
