@@ -47,6 +47,8 @@ public class PaymentEventListener {
                 Payment payment = paymentRepository.findById(event.paymentId())
                     .orElseThrow(PaymentNotFoundException::new);
 
+                String description = "[" + payment.getRental().getPost().getTitle() + "] 결제 완료";
+
                 PointHistory history = PointHistory.builder()
                     .user(user)
                     .rental(payment.getRental())
@@ -54,6 +56,7 @@ public class PaymentEventListener {
                     .type(PointHistoryType.EARN)
                     .amount(rewardPoint)
                     .finalBalance(user.getPoint())
+                    .description(description)
                     .build();
                 pointHistoryRepository.save(history);
             }

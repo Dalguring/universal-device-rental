@@ -119,6 +119,8 @@ public class PaymentService {
             User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
             user.usePoint(request.getPointAmount());
 
+            String description = "[" + post.getTitle() + "] 대여 시 사용";
+
             PointHistory pointHistory = PointHistory.builder()
                 .user(user)
                 .rental(rental)
@@ -126,6 +128,7 @@ public class PaymentService {
                 .type(PointHistoryType.SPEND)
                 .amount(request.getPointAmount())
                 .finalBalance(user.getPoint())
+                .description(description)
                 .build();
             pointHistoryRepository.save(pointHistory);
         }
@@ -204,6 +207,8 @@ public class PaymentService {
 
                 user.usePoint(earnedPoint);
 
+                String description = "[" + payment.getRental().getPost().getTitle() + "] 결제 취소";
+
                 PointHistory reclaimHistory = PointHistory.builder()
                     .user(user)
                     .rental(payment.getRental())
@@ -211,12 +216,15 @@ public class PaymentService {
                     .type(PointHistoryType.ADJUST)
                     .amount(earnedPoint)
                     .finalBalance(user.getPoint())
+                    .description(description)
                     .build();
                 pointHistoryRepository.save(reclaimHistory);
             });
 
         if (payment.getUsedPoint() > 0) {
             user.addPoint(payment.getUsedPoint());
+
+            String description = "[" + payment.getRental().getPost().getTitle() + "] 대여 취소";
 
             PointHistory pointHistory = PointHistory.builder()
                 .user(user)
@@ -225,6 +233,7 @@ public class PaymentService {
                 .type(PointHistoryType.REFUND)
                 .amount(payment.getUsedPoint())
                 .finalBalance(user.getPoint())
+                .description(description)
                 .build();
             pointHistoryRepository.save(pointHistory);
         }
