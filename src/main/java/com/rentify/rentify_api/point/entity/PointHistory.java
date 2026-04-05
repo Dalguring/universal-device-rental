@@ -57,6 +57,9 @@ public class PointHistory {
     @Column(name = "final_balance", nullable = false)
     private Integer finalBalance;
 
+    @Column(name = "description")
+    private String description;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createAt;
