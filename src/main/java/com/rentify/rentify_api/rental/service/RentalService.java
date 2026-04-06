@@ -20,6 +20,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,7 @@ public class RentalService {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
 
+    @CacheEvict(value = "posts", key = "#request.postId")
     @Transactional
     public RentalResponse createRental(Long userId, RentalRequest request) {
         // 사용자 조회
@@ -150,6 +152,7 @@ public class RentalService {
             .build();
     }
 
+    @CacheEvict(value = "posts", key = "#result.postId")
     @Transactional
     public RentalResponse cancelRental(Long userId, Long rentalId) {
         // 대여 정보 조회
