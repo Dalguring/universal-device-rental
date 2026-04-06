@@ -41,7 +41,7 @@ public class RentalService {
                 .orElseThrow(UserNotFoundException::new);
 
         // 게시글 조회
-        Post post = postRepository.findById(request.getPostId())
+        Post post = postRepository.findByIdWithPessimisticLock(request.getPostId())
             .orElseThrow(() -> new NotFoundException("게시글을 찾을 수 없습니다."));
 
         // 본인의 게시글 여부 확인
