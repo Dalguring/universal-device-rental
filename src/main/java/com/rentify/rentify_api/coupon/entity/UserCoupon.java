@@ -53,7 +53,7 @@ public class UserCoupon {
     private LocalDateTime usedAt;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, columnDefinition = "user_coupon_status")
+    @Column(name = "status", nullable = false)
     private UserCouponStatus status;
 
     @Version

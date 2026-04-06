@@ -8,7 +8,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.persistence.Version;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -16,9 +15,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "coupons")
@@ -36,11 +33,11 @@ public class Coupon {
     @Column(name = "coupon_name", nullable = false, length = 100)
     private String couponName;
 
-    @Column(name = "description", length = 255)
+    @Column(name = "description")
     private String description;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "discount_type", nullable = false, columnDefinition = "coupon_discount_type")
+    @Column(name = "discount_type", nullable = false)
     private CouponDiscountType discountType;
 
     @Column(name = "discount_value", nullable = false)
@@ -68,7 +65,7 @@ public class Coupon {
     private LocalDateTime validUntil;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, columnDefinition = "coupon_status")
+    @Column(name = "status", nullable = false)
     private CouponStatus status;
 
     @CreationTimestamp
