@@ -139,7 +139,6 @@ public class PaymentService {
 
         rental.confirm();
         payment.updateAsPaid();
-        post.markAsRented();
 
         PaymentEvent paymentEvent = PaymentEvent.builder()
             .payment(payment)
@@ -197,7 +196,6 @@ public class PaymentService {
 
         payment.updateAsCanceled();
         payment.getRental().cancel();
-        payment.getRental().getPost().updateStatus(PostStatus.AVAILABLE);
 
         User user = payment.getUser();
 

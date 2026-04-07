@@ -40,7 +40,7 @@ public class RentalService {
     public RentalResponse createRental(Long userId, RentalRequest request) {
         // 사용자 조회
         User user = userRepository.findById(userId)
-                .orElseThrow(UserNotFoundException::new);
+            .orElseThrow(UserNotFoundException::new);
 
         // 게시글 조회
         Post post = postRepository.findByIdWithPessimisticLock(request.getPostId())
@@ -73,7 +73,6 @@ public class RentalService {
 
         Rental savedRental = rentalRepository.save(rental);
 
-        // 대여 신청 단계에서는 게시글 상태 변경하지 않음 (결제 확정 시 변경)
         return convertToResponse(savedRental);
     }
 
@@ -157,7 +156,7 @@ public class RentalService {
     public RentalResponse cancelRental(Long userId, Long rentalId) {
         // 대여 정보 조회
         Rental rental = rentalRepository.findById(rentalId)
-                .orElseThrow(RentalNotFoundException::new);
+            .orElseThrow(RentalNotFoundException::new);
 
         // 본인 확인
         if (!rental.getUser().getId().equals(userId)) {
@@ -166,11 +165,6 @@ public class RentalService {
 
         // 대여 취소
         rental.cancel();
-
-        // 게시글이 RESERVED 상태였다면 AVAILABLE로 변경
-        if (rental.getPost().getStatus() == PostStatus.RESERVED) {
-            rental.getPost().updateStatus(PostStatus.AVAILABLE);
-        }
 
         return convertToResponse(rental);
     }
@@ -200,7 +194,6 @@ public class RentalService {
         return results.map(row -> {
             Rental rental = (Rental) row[0];
             Payment payment = (Payment) row[1];
-
             return RentalResponse.of(rental, payment);
         });
     }
