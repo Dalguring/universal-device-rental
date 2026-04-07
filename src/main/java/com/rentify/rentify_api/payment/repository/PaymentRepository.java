@@ -1,6 +1,8 @@
 package com.rentify.rentify_api.payment.repository;
 
 import com.rentify.rentify_api.payment.entity.Payment;
+import com.rentify.rentify_api.payment.entity.PaymentStatus;
+import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,4 +21,9 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
             "WHERE p.user.id = :userId"
     )
     Page<Payment> findByUserId(@Param("userId") Long userId, Pageable pageable);
+
+    boolean existsByRentalIdInAndStatus(
+        @Param("rentals") Set<Long> rentals,
+        @Param("status") PaymentStatus status
+    );
 }

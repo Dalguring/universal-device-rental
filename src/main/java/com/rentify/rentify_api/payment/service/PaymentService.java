@@ -23,7 +23,6 @@ import com.rentify.rentify_api.point.entity.PointHistory;
 import com.rentify.rentify_api.point.entity.PointHistoryType;
 import com.rentify.rentify_api.point.repository.PointHistoryRepository;
 import com.rentify.rentify_api.post.entity.Post;
-import com.rentify.rentify_api.post.entity.PostStatus;
 import com.rentify.rentify_api.post.exception.PostNotFoundException;
 import com.rentify.rentify_api.post.repository.PostRepository;
 import com.rentify.rentify_api.rental.entity.Rental;
@@ -36,7 +35,10 @@ import com.rentify.rentify_api.user.exception.UnauthenticatedException;
 import com.rentify.rentify_api.user.exception.UserNotFoundException;
 import com.rentify.rentify_api.user.repository.UserRepository;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -111,8 +113,19 @@ public class PaymentService {
         Post post = postRepository.findByIdWithPessimisticLock(rental.getPost().getId())
             .orElseThrow(PostNotFoundException::new);
 
-        if (post.getStatus() != PostStatus.AVAILABLE) {
-            throw new RentalNotAvailableException();
+        List<Rental> overlappingRentals = rentalRepository.findOverlappingRentals(
+            rental.getPost().getId(), rental.getStartDate(), rental.getEndDate()
+        );
+
+        Set<Long> rentalIds = overlappingRentals.stream()
+            .map(Rental::getId)
+            .collect(Collectors.toSet());
+
+        boolean isPaymentDuplicate =
+            paymentRepository.existsByRentalIdInAndStatus(rentalIds, PaymentStatus.PAID);
+
+        if (isPaymentDuplicate) {
+            throw new RentalNotAvailableException("해당 기간에 물품이 이미 대여되었습니다.");
         }
 
         if (request.getPointAmount() > 0) {
@@ -139,7 +152,6 @@ public class PaymentService {
 
         rental.confirm();
         payment.updateAsPaid();
-        post.markAsRented();
 
         PaymentEvent paymentEvent = PaymentEvent.builder()
             .payment(payment)
@@ -197,7 +209,6 @@ public class PaymentService {
 
         payment.updateAsCanceled();
         payment.getRental().cancel();
-        payment.getRental().getPost().updateStatus(PostStatus.AVAILABLE);
 
         User user = payment.getUser();
 

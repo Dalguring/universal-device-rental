@@ -72,7 +72,6 @@ class PaymentConcurrencyTest {
     @MockitoBean
     JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    private Post post;
     private List<User> renters;
     private List<Rental> rentals;
 
@@ -89,7 +88,7 @@ class PaymentConcurrencyTest {
             .description("전자기기 카테고리")
             .build());
 
-        post = postRepository.save(Post.builder()
+        Post post = postRepository.save(Post.builder()
             .user(owner)
             .category(category)
             .title("동시성 테스트 게시글")
@@ -179,7 +178,6 @@ class PaymentConcurrencyTest {
         doneLatch.await();
 
         // then
-        Post updatedPost = postRepository.findById(post.getId()).orElseThrow();
         long paidCount = paymentRepository.findAll().stream()
             .filter(p -> p.getStatus() == PaymentStatus.PAID)
             .count();
@@ -187,11 +185,9 @@ class PaymentConcurrencyTest {
         System.out.println("결제 성공: " + successCount.get());
         System.out.println("결제 실패: " + failCount.get());
         System.out.println("PAID 상태 결제 수: " + paidCount);
-        System.out.println("게시글 상태: " + updatedPost.getStatus());
 
         assertThat(successCount.get()).isEqualTo(1);
         assertThat(paidCount).isEqualTo(1);
-        assertThat(updatedPost.getStatus()).isEqualTo(PostStatus.RESERVED);
 
         executorService.shutdown();
     }
