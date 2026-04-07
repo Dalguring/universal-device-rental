@@ -75,11 +75,12 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
     @Query("SELECT r FROM Rental r " +
             "WHERE r.post.id = :postId " +
             "AND r.endDate >= :today " +
-            "AND r.status IN ('REQUESTED', 'CONFIRMED') " +
+            "AND r.status IN :statuses " +
             "ORDER BY r.startDate ASC")
     List<Rental> findFutureRentalsByPostId(
-            @Param("postId") Long postId,
-            @Param("today") LocalDate today
+        @Param("postId") Long postId,
+        @Param("today") LocalDate today,
+        @Param("statuses") List<RentalStatus> statuses
     );
 
     /**
@@ -96,11 +97,12 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
             "AND r.startDate <= :endDate " +
             "AND r.endDate >= :startDate")
     List<Rental> findOverlappingRentals(
-            @Param("postId") Long postId,
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate
+        @Param("postId") Long postId,
+        @Param("startDate") LocalDate startDate,
+        @Param("endDate") LocalDate endDate
     );
 
     @Query("SELECT COUNT(r) FROM Rental r WHERE r.user.id = :userId")
     Long countByUserId(@Param("userId") Long userId);
+
 }

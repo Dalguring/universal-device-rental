@@ -14,6 +14,7 @@ import com.rentify.rentify_api.post.exception.PostNotFoundException;
 import com.rentify.rentify_api.post.repository.PostHistoryRepository;
 import com.rentify.rentify_api.post.repository.PostRepository;
 import com.rentify.rentify_api.rental.entity.Rental;
+import com.rentify.rentify_api.rental.entity.RentalStatus;
 import com.rentify.rentify_api.rental.repository.RentalRepository;
 import com.rentify.rentify_api.user.entity.User;
 import com.rentify.rentify_api.user.exception.UserNotFoundException;
@@ -82,7 +83,10 @@ public class PostService {
 
         // 현재 게시글에 적용되어있는 rental 조회
         List<Rental> rentals = rentalRepository
-                .findFutureRentalsByPostId(postId, LocalDate.now());
+            .findFutureRentalsByPostId(postId, LocalDate.now(), List.of(
+                RentalStatus.REQUESTED,
+                RentalStatus.CONFIRMED
+            ));
 
         return PostDetailResponse.from(post, rentals);
     }

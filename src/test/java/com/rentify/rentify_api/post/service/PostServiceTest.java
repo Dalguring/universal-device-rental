@@ -19,6 +19,7 @@ import com.rentify.rentify_api.post.dto.PostFormRequest;
 import com.rentify.rentify_api.post.entity.Post;
 import com.rentify.rentify_api.post.repository.PostHistoryRepository;
 import com.rentify.rentify_api.post.repository.PostRepository;
+import com.rentify.rentify_api.rental.entity.RentalStatus;
 import com.rentify.rentify_api.rental.repository.RentalRepository;
 import com.rentify.rentify_api.user.entity.User;
 import com.rentify.rentify_api.user.exception.UserNotFoundException;
@@ -183,7 +184,10 @@ class PostServiceTest {
             .build();
 
         given(postRepository.findById(postId)).willReturn(Optional.of(mockPost));
-        given(rentalRepository.findFutureRentalsByPostId(postId, LocalDate.now()))
+        given(rentalRepository.findFutureRentalsByPostId(postId, LocalDate.now(), List.of(
+            RentalStatus.REQUESTED,
+            RentalStatus.CONFIRMED
+        )))
                 .willReturn(List.of());
         // when
         PostDetailResponse response = postService.getPost(postId);

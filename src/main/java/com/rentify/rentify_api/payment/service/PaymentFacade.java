@@ -39,7 +39,7 @@ public class PaymentFacade {
 
             mockPgClient.cancelPayment(paymentId);
             paymentService.failPayment(paymentId, PaymentFailReason.CONCURRENCY_CONFLICT);
-            throw new DuplicateException("물품이 이미 대여되었습니다. 결제가 취소됩니다.");
+            throw new DuplicateException("해당 기간에 물품이 이미 대여되었습니다. 결제가 취소됩니다.");
         } catch (Exception e) {
             log.error("시스템 오류로 인한 결제 실패", e);
             mockPgClient.cancelPayment(paymentId);
